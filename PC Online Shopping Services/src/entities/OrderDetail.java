@@ -3,6 +3,7 @@ package entities;
 public class OrderDetail {
 	private int orderNumber;
 	private int productNumber;
+	private Product product = new Product();
 	private int orderLineNumber;
 	private int quantityOrdered;
 	private double priceEach;
@@ -25,9 +26,11 @@ public class OrderDetail {
 	
 	@Override
 	public String toString() {
-		return "OrderDetail [orderNumber=" + orderNumber + ", productNumber=" + productNumber + ", orderLineNumber="
-				+ orderLineNumber + ", quantityOrdered=" + quantityOrdered + ", priceEach=" + priceEach + "]";
+		return "OrderDetail [orderNumber=" + orderNumber + ", productNumber=" + productNumber + ", product=" + product
+				+ ", orderLineNumber=" + orderLineNumber + ", quantityOrdered=" + quantityOrdered + ", priceEach="
+				+ priceEach + "]";
 	}
+
 	public int getOrderNumber() {
 		return orderNumber;
 	}
@@ -58,6 +61,10 @@ public class OrderDetail {
 	public void setPriceEach(double priceEach) {
 		this.priceEach = priceEach;
 	}
-	
-	
+	public Product getProduct() {
+		return product;
+	}
+	public void setProduct(Product product) {
+		this.product = product;
+	}
 }

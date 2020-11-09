@@ -1,18 +1,21 @@
 package entities;
 
-import java.time.LocalDate;
+import java.sql.Date;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Order {
 	private int orderNumber;
 	private int customerNumber;
-	private LocalDate orderDate;
-	private LocalDate requiredDate;
-	private LocalDate shippedDate;
+	private Date orderDate;
+	private Date requiredDate;
+	private Date shippedDate;
 	private String status;
 	private String comments;
+	private List<OrderDetail> orderDetails = new ArrayList<OrderDetail>();
 	
-	public Order(int orderNumber, int customerNumber, LocalDate orderDate, LocalDate requiredDate,
-			LocalDate shippedDate, String status, String comments) {
+	public Order(int orderNumber, int customerNumber, Date orderDate, Date requiredDate,
+			Date shippedDate, String status, String comments) {
 		this.orderNumber = orderNumber;
 		this.customerNumber = customerNumber;
 		this.orderDate = orderDate;
@@ -25,20 +28,21 @@ public class Order {
 	public Order() {
 		this.orderNumber = 0;
 		this.customerNumber = 0;
-		this.orderDate = LocalDate.MIN;
-		this.requiredDate = LocalDate.MIN;
-		this.shippedDate = LocalDate.MIN;
+		this.orderDate = new Date(0);
+		this.requiredDate = new Date(0);
+		this.shippedDate = new Date(0);
 		this.status = "";
 		this.comments = "";
 	}
+	
 	
 	@Override
 	public String toString() {
 		return "Order [orderNumber=" + orderNumber + ", customerNumber=" + customerNumber + ", orderDate=" + orderDate
 				+ ", requiredDate=" + requiredDate + ", shippedDate=" + shippedDate + ", status=" + status
-				+ ", comments=" + comments + "]";
+				+ ", comments=" + comments + ", orderDetails=" + orderDetails + "]";
 	}
-	
+
 	public int getOrderNumber() {
 		return orderNumber;
 	}
@@ -51,22 +55,22 @@ public class Order {
 	public void setCustomerNumber(int customerNumber) {
 		this.customerNumber = customerNumber;
 	}
-	public LocalDate getOrderDate() {
+	public Date getOrderDate() {
 		return orderDate;
 	}
-	public void setOrderDate(LocalDate orderDate) {
+	public void setOrderDate(Date orderDate) {
 		this.orderDate = orderDate;
 	}
-	public LocalDate getRequiredDate() {
+	public Date getRequiredDate() {
 		return requiredDate;
 	}
-	public void setRequiredDate(LocalDate requiredDate) {
+	public void setRequiredDate(Date requiredDate) {
 		this.requiredDate = requiredDate;
 	}
-	public LocalDate getShippedDate() {
+	public Date getShippedDate() {
 		return shippedDate;
 	}
-	public void setShippedDate(LocalDate shippedDate) {
+	public void setShippedDate(Date shippedDate) {
 		this.shippedDate = shippedDate;
 	}
 	public String getStatus() {
@@ -81,5 +85,13 @@ public class Order {
 	public void setComments(String comments) {
 		this.comments = comments;
 	}
-	
+	public List<OrderDetail> getOrderDetails() {
+		return orderDetails;
+	}
+	public void addOrderDetail(OrderDetail orderDetail) {
+		orderDetails.add(orderDetail);
+	}
+	public void setOrderDetails(List<OrderDetail> orderDetails) {
+		this.orderDetails = orderDetails;
+	}
 }

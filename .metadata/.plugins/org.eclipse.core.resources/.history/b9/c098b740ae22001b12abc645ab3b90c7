@@ -1,0 +1,28 @@
+package database;
+
+public class Tester {	
+	
+	public static void main(String[] args) {
+		
+		Database db;
+		try {
+			db = new Database();
+			
+			System.out.println(db.getBankAccount(3));
+			
+			System.out.println(db.isPasswordCorrect(2, "2"));
+			
+			System.out.println(db.getBrand(1));
+			
+			System.out.println(db.getAllBrands());
+			
+			System.out.println(db.getCustomer(3));
+			
+			db.close();
+			
+		} catch (CustomException e) {
+			e.printStackTrace();
+		}
+	}
+
+}

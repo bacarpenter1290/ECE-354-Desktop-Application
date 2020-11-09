@@ -3,6 +3,7 @@ package entities;
 public class ShoppingCartDetail {
 	private int shoppingCartNumber;
 	private int productNumber;
+	private Product product;
 	private int quantity;
 	
 	public ShoppingCartDetail(int shoppingCartNumber, int productNumber, int quantity) {
@@ -20,7 +21,7 @@ public class ShoppingCartDetail {
 	@Override
 	public String toString() {
 		return "ShoppingCartDetail [shoppingCartNumber=" + shoppingCartNumber + ", productNumber=" + productNumber
-				+ ", quantity=" + quantity + "]";
+				+ ", product=" + product + ", quantity=" + quantity + "]";
 	}
 	
 	public int getShoppingCartNumber() {
@@ -40,6 +41,14 @@ public class ShoppingCartDetail {
 	}
 	public void setQuantity(int quantity) {
 		this.quantity = quantity;
+	}
+
+	public Product getProduct() {
+		return product;
+	}
+
+	public void setProduct(Product product) {
+		this.product = product;
 	}
 	
 }
