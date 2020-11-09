@@ -1,0 +1,549 @@
+package database;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.sql.Date;
+import java.util.List;
+
+import entities.*;
+import services.CustomException;
+
+public class Database {
+	
+	private final String dBSchema = "coconinodatabase";
+	private final String dBUser = "OnlineShoppingApp";
+	private final String dBPass = "eSGDm43ZU6bGz9w";
+	
+	private Connection conn;
+	
+	public Database() throws CustomException {
+		try {
+			Class.forName("com.mysql.cj.jdbc.Driver");
+			conn = DriverManager.getConnection(
+					"jdbc:mysql://localhost:3306/" + dBSchema, dBUser, dBPass);
+		}
+		catch(Exception e){ 
+			System.out.println("Error when connecting to databse: " + e);
+			throw new CustomException("DATABASE_EXCEPTION", "Failed to connect to database", e);
+		}  
+	}
+	
+	public void close() {
+		try {
+			conn.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	// checks if a given password is correct
+	public boolean isPasswordCorrect(int customerNumber, String pass) {
+		boolean isPasswordCorrect = false;
+		String passHash = "";
+		
+		// get the stored hash from the database
+		try {
+			Statement stmt = conn.createStatement();
+			ResultSet rs = stmt.executeQuery("select * from passwords where customerNumber = " + customerNumber);
+			while(rs.next()) {
+				passHash = rs.getString(2);
+			}
+		}
+		catch(Exception e){ 
+			System.out.println(e);
+		}
+		
+		// if the stored hash equals to hash of the given password, it's the right password
+		if (passHash.equals(Sha1.hash(pass))) {
+			isPasswordCorrect = true;
+		}
+		return isPasswordCorrect;
+	}
+	
+	// find a bank account with a given bank account number
+	public BankAccount getBankAccount(int bankAccountNumber) {
+		int customerNumber = 0;
+		String bank = "";
+		int routingNumber = 0;
+		int accountNumber = 0;
+		double balance = 0;
+		
+		BankAccount aBankAccount;	
+		try {
+			Statement stmt = conn.createStatement();
+			ResultSet rs = stmt.executeQuery("select * from bankaccounts where bankAccountNumber = " + bankAccountNumber);
+			while(rs.next()) {
+				bankAccountNumber = rs.getInt(1);
+				customerNumber = rs.getInt(2);
+				bank = rs.getString(3);
+				routingNumber = rs.getInt(4);
+				accountNumber = rs.getInt(5);
+				balance = rs.getDouble(6);
+			}
+		}
+		catch(Exception e){ 
+			System.out.println(e);
+		}
+		aBankAccount = new BankAccount(bankAccountNumber, customerNumber, bank, routingNumber, accountNumber, balance);
+		
+		return aBankAccount;
+	}
+	
+	// update a given bank account in the database
+	public void updateBankAccount(BankAccount bankAccount) {
+		try {
+			Statement stmt = conn.createStatement();
+			
+			String sql = "Update bankaccounts "
+					+ "set bank = '" + bankAccount.getBank() + "', "
+					+ "routingNumber = '" + bankAccount.getAccountNumber() + "', "
+					+ "accountNumber = '" + bankAccount.getRoutingNumber() + "', "
+					+ "balance = " + bankAccount.getBalance() + " "
+					+ "where bankAccountNumber = " + bankAccount.getBankAccountNumber();
+			
+			stmt.executeUpdate(sql);
+		}
+		catch(Exception e){ 
+			System.out.println(e);
+		}
+	}
+	
+	// find a bank account with a given customer number
+	public BankAccount getCustomersBankAccount(int customerNumber) {
+		int bankAccountNumber = 0;
+		String bank = "";
+		int routingNumber = 0;
+		int accountNumber = 0;
+		double balance = 0;
+		
+		BankAccount aBankAccount;	
+		try {
+			Statement stmt = conn.createStatement();
+			ResultSet rs = stmt.executeQuery("select * from bankaccounts where customerNumber = " + customerNumber);
+			while(rs.next()) {
+				bankAccountNumber = rs.getInt(1);
+				customerNumber = rs.getInt(2);
+				bank = rs.getString(3);
+				routingNumber = rs.getInt(4);
+				accountNumber = rs.getInt(5);
+				balance = rs.getDouble(6);
+			}
+		}
+		catch(Exception e){ 
+			System.out.println(e);
+		}
+		aBankAccount = new BankAccount(bankAccountNumber, customerNumber, bank, routingNumber, accountNumber, balance);
+		
+		return aBankAccount;
+	}
+	
+	// find a brand with a given vendor number
+	public Brand getBrand(int vendorNumber) {
+		String brandName = "";
+		String description = "";
+		
+		Brand aBrand;	
+		try {
+			Statement stmt = conn.createStatement();
+			ResultSet rs = stmt.executeQuery("select * from brands where vendorNumber = " + vendorNumber);
+			while(rs.next()) {
+				vendorNumber = rs.getInt(1);
+				brandName = rs.getString(2);
+				description = rs.getString(3);
+			}
+		}
+		catch(Exception e){ 
+			System.out.println(e);
+		}
+		aBrand = new Brand(vendorNumber, brandName, description);
+		
+		return aBrand;
+	}
+	
+	// find all brands in database
+	public List<Brand> getAllBrands() {		
+		List<Brand> brands = new ArrayList<Brand>();	
+		
+		try {
+			Statement stmt = conn.createStatement();
+			ResultSet rs = stmt.executeQuery("select * from brands");
+			while(rs.next()) {
+				int vendorNumber = 0;
+				String brandName = "";
+				String description = "";
+				
+				vendorNumber = rs.getInt(1);
+				brandName = rs.getString(2);
+				description = rs.getString(3);
+				brands.add(new Brand(vendorNumber, brandName, description));
+			}
+		}
+		catch(Exception e){ 
+			System.out.println(e);
+		}
+		
+		return brands;
+	}
+	
+	// update a given bank account in the database
+	public void updateBrand(Brand brand) {
+		try {
+			Statement stmt = conn.createStatement();
+			
+			String sql = "Update brands "
+					+ "set brandName = '" + brand.getBrandName() + "', "
+					+ "description = '" + brand.getDescription() + "', "
+					+ "where vendorNumber = " + brand.getVendorNumber();
+			
+			stmt.executeUpdate(sql);
+		}
+		catch(Exception e){ 
+			System.out.println(e);
+		}
+	}
+	
+	// find a customer with a given customerNumber
+	public Customer getCustomer(int customerNumber) {
+		String firstName = "";
+		String lastName = "";
+		String phoneNumber = "";
+		String addressLine1 = "";
+		String addressLine2 = "";
+		String city = "";
+		String state = "";
+		String postalCode = "";
+		String country = "";
+		
+		Customer aCustomer;	
+		try {
+			Statement stmt = conn.createStatement();
+			ResultSet rs = stmt.executeQuery("select * from customers where customerNumber = " + customerNumber);
+			while(rs.next()) {
+				customerNumber = rs.getInt(1);
+				firstName = rs.getString(2);
+				lastName = rs.getString(3);
+				phoneNumber = rs.getString(4);
+				addressLine1 = rs.getString(5);
+				addressLine2 = rs.getString(6);
+				city = rs.getString(7);
+				state = rs.getString(8);
+				postalCode = rs.getString(9);
+				country = rs.getString(10);
+			}
+		}
+		catch(Exception e){ 
+			System.out.println(e);
+		}
+		aCustomer = new Customer(customerNumber, firstName, lastName, phoneNumber, addressLine1, addressLine2, city, state, postalCode, country);
+		
+		return aCustomer;
+	}
+	
+	// find all customers
+	public List<Customer> getAllCustomers() {
+		
+		List<Customer> customers = new ArrayList<Customer>();	
+		try {
+			Statement stmt = conn.createStatement();
+			ResultSet rs = stmt.executeQuery("select * from customers");
+			while(rs.next()) {
+				int customerNumber = 0;
+				String firstName = "";
+				String lastName = "";
+				String phoneNumber = "";
+				String addressLine1 = "";
+				String addressLine2 = "";
+				String city = "";
+				String state = "";
+				String postalCode = "";
+				String country = "";
+				
+				customerNumber = rs.getInt(1);
+				firstName = rs.getString(2);
+				lastName = rs.getString(3);
+				phoneNumber = rs.getString(4);
+				addressLine1 = rs.getString(5);
+				addressLine2 = rs.getString(6);
+				city = rs.getString(7);
+				state = rs.getString(8);
+				postalCode = rs.getString(9);
+				country = rs.getString(10);
+				
+				customers.add(new Customer(customerNumber, firstName, lastName, phoneNumber, addressLine1, addressLine2, city, state, postalCode, country));
+			}
+		}
+		catch(Exception e){ 
+			System.out.println(e);
+		}
+		return customers;
+	}
+	
+	// get an order using a given order number
+	public Order getOrder(int orderNumber) {
+		int customerNumber = 0;
+		Date orderDate = new Date(0);
+		Date requiredDate = new Date(0);
+		Date shippedDate = new Date(0);
+		String status = "";
+		String comments = "";
+		
+		Order order;
+		List<OrderDetail> orderDetails = new ArrayList<OrderDetail>();
+		try {
+			Statement stmt = conn.createStatement();
+			ResultSet rs = stmt.executeQuery("select * from orders where orderNumber = " + orderNumber);
+			while(rs.next()) {	
+				orderNumber = rs.getInt(1);
+				customerNumber = rs.getInt(2);
+				orderDate = rs.getDate(3);
+				requiredDate = rs.getDate(4);
+				shippedDate = rs.getDate(5);
+				status = "";
+				comments = "";
+				
+				orderDetails = getOrderDetails(orderNumber);
+			}
+		}
+		catch(Exception e){ 
+			System.out.println(e);
+		}
+		order = new Order(orderNumber, customerNumber, orderDate, requiredDate, shippedDate, status, comments);
+		order.setOrderDetails(orderDetails);
+		return order;
+	}
+	
+	// get all orders from a given customer
+	public List<Order> getAllCustomerOrders(int customerNumber) {
+		List<Order> orders = new ArrayList<Order>();
+		try {
+			Statement stmt = conn.createStatement();
+			ResultSet rs = stmt.executeQuery("select orderNumber from orders where customerNumber = " + customerNumber);
+			while(rs.next()) {	
+				int orderNumber = 0;
+				orderNumber = rs.getInt(1);
+				
+				orders.add(getOrder(orderNumber));
+			}
+		}
+		catch (Exception e) {
+			System.out.println(e);
+		}
+		return orders;
+	}
+	
+	// get all order details from a given order
+	public List<OrderDetail> getOrderDetails(int orderNumber) {
+		List<OrderDetail> orderDetails = new ArrayList<OrderDetail>();
+		try {
+			Statement stmt = conn.createStatement();
+			ResultSet rs = stmt.executeQuery("select * from orderdetails where orderNumber = " + orderNumber);
+			while(rs.next()) {
+				int productNumber = 0;
+				int orderLineNumber = 0;
+				int quantityOrdered = 0;
+				double priceEach = 0;
+				
+				productNumber = rs.getInt(2);
+				orderLineNumber = rs.getInt(3);
+				quantityOrdered = rs.getInt(4);
+				priceEach = rs.getDouble(5);
+				
+				OrderDetail aDetail = new OrderDetail(orderNumber, productNumber, orderLineNumber, quantityOrdered, priceEach);
+				aDetail.setProduct(getProduct(productNumber));
+				orderDetails.add(aDetail);
+			}
+		}
+		catch(Exception e) {
+			System.out.println(e);
+		}
+		return orderDetails;
+	}
+	
+	// find a product using a given product number
+	public Product getProduct(int productNumber) {
+		String productName = "";
+		int vendorNumber = 0;
+		int productLineNumber = 0;
+		String productDescription = "";
+		int quantityInStock = 0;
+		double msrp = 0;
+		double discountPercent = 0;
+		
+		Product product;
+		try {
+			Statement stmt = conn.createStatement();
+			ResultSet rs = stmt.executeQuery("select * from products where productNumber = " + productNumber);
+			while(rs.next()) {
+				productName = rs.getString(2);
+				vendorNumber = rs.getInt(3);
+				productLineNumber = rs.getInt(4);
+				productDescription = rs.getString(5);
+				quantityInStock = rs.getInt(6);
+				msrp = rs.getDouble(7);
+				discountPercent = rs.getDouble(8);
+			}
+		}
+		catch(Exception e) {
+			System.out.println(e);
+		}
+		product = new Product(productNumber, productName, 
+				vendorNumber, productLineNumber, productDescription, 
+				quantityInStock, msrp, discountPercent);
+		return product;
+	}
+	
+	// find all product lines
+	public List<ProductLine> getProductLines() {
+		List<ProductLine> productLines = new ArrayList<ProductLine>();
+		try {
+			Statement stmt = conn.createStatement();
+			ResultSet rs = stmt.executeQuery("select * from productlines");
+			while(rs.next()) {
+				int productLineNumber = 0;
+				String productLine = "";
+				String description = "";
+				
+				productLineNumber = rs.getInt(1);
+				productLine = rs.getString(2);
+				description = rs.getString(3);
+				
+				productLines.add(new ProductLine(productLineNumber, productLine, description));
+			}
+		}
+		catch(Exception e) {
+			System.out.println(e);
+		}
+		return productLines;
+	}
+	
+	// find all brands
+	public List<Brand> getBrands() {
+		List<Brand> brands = new ArrayList<Brand>();
+		try {
+			Statement stmt = conn.createStatement();
+			ResultSet rs = stmt.executeQuery("select * from brands");
+			while(rs.next()) {
+				int vendorNumber = 0;
+				String brandName = "";
+				String description = "";
+				
+				vendorNumber = rs.getInt(1);
+				brandName = rs.getString(2);
+				description = rs.getString(3);
+				
+				brands.add(new Brand(vendorNumber, brandName, description));
+			}
+		}
+		catch(Exception e) {
+			System.out.println(e);
+		}
+		return brands;
+	}
+	
+	// get all products
+	public List<Product> getAllProducts() {
+		List<Product> products = new ArrayList<Product>();
+		try {
+			Statement stmt = conn.createStatement();
+			ResultSet rs = stmt.executeQuery("select productNumber from products");
+			while(rs.next()) {
+				int productNumber = 0;
+				
+				productNumber = rs.getInt(1);
+				
+				products.add(getProduct(productNumber));
+			}
+		}
+		catch(Exception e) {
+			System.out.println(e);
+		}
+		return products;
+	}
+	
+	// get all products in a specific product line
+	public List<Product> getAllProductsInLine(int productLineNumber) {
+		List<Product> products = new ArrayList<Product>();
+		try {
+			Statement stmt = conn.createStatement();
+			ResultSet rs = stmt.executeQuery("select productNumber from products where productLineNumber = " + productLineNumber);
+			while(rs.next()) {
+				int productNumber = 0;
+				
+				productNumber = rs.getInt(1);
+				
+				products.add(getProduct(productNumber));
+			}
+		}
+		catch(Exception e) {
+			System.out.println(e);
+		}
+		return products;
+	}
+	
+	// get all products from a specific brand
+	public List<Product> getAllProductsFromBrand(int vendorNumber) {
+		List<Product> products = new ArrayList<Product>();
+		try {
+			Statement stmt = conn.createStatement();
+			ResultSet rs = stmt.executeQuery("select productNumber from products where vendorNumber = " + vendorNumber);
+			while(rs.next()) {
+				int productNumber = 0;
+				
+				productNumber = rs.getInt(1);
+				
+				products.add(getProduct(productNumber));
+			}
+		}
+		catch(Exception e) {
+			System.out.println(e);
+		}
+		return products;
+	}
+	
+	// find a customer's shopping cart
+	public ShoppingCart getShoppingCart(int customerNumber) {
+		int shoppingCartNumber = 0;
+		Date createdDate = new Date(0);
+		
+		ShoppingCart cart;
+		try {
+			Statement stmt = conn.createStatement();
+			ResultSet rs = stmt.executeQuery("select * from shoppingcart where customerNumber = " + customerNumber + " order by createdDate desc limit 1");
+			while(rs.next()) {
+				shoppingCartNumber = rs.getInt(1);
+				customerNumber = rs.getInt(2);
+				createdDate = rs.getDate(3);
+			}
+		}
+		catch(Exception e) {
+			System.out.println(e);
+		}
+		cart = new ShoppingCart(shoppingCartNumber, customerNumber, createdDate);
+		cart.setShoppingCartDetails(getShoppingCartDetails(shoppingCartNumber));
+		return cart;
+	}
+	
+	// find the details of a given shopping cart
+	public List<ShoppingCartDetail> getShoppingCartDetails(int shoppingCartNumber) {
+		List<ShoppingCartDetail> shoppingCartDetails = new ArrayList<ShoppingCartDetail>();
+		try {
+			Statement stmt = conn.createStatement();
+			ResultSet rs = stmt.executeQuery("select * from shoppingcartdetails where shoppingCartNumber = " + shoppingCartNumber);
+			while(rs.next()) {
+				int productNumber = 0;
+				int quantity = 0;
+				
+				productNumber = rs.getInt(2);
+				quantity = rs.getInt(3);
+				
+				ShoppingCartDetail aDetail = new ShoppingCartDetail(shoppingCartNumber, productNumber, quantity);
+				aDetail.setProduct(getProduct(productNumber));
+				shoppingCartDetails.add(aDetail);
+			}
+		}
+		catch(Exception e) {
+			System.out.println(e);
+		}
+		return shoppingCartDetails;
+	}
+}

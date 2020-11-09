@@ -6,6 +6,7 @@ import java.sql.Date;
 import java.util.List;
 
 import entities.*;
+import services.CustomException;
 
 public class Database {
 	
@@ -88,6 +89,25 @@ public class Database {
 		return aBankAccount;
 	}
 	
+	// update a given bank account in the database
+	public void updateBankAccount(BankAccount bankAccount) {
+		try {
+			Statement stmt = conn.createStatement();
+			
+			String sql = "Update bankaccounts "
+					+ "set bank = '" + bankAccount.getBank() + "', "
+					+ "routingNumber = '" + bankAccount.getAccountNumber() + "', "
+					+ "accountNumber = '" + bankAccount.getRoutingNumber() + "', "
+					+ "balance = " + bankAccount.getBalance() + " "
+					+ "where bankAccountNumber = " + bankAccount.getBankAccountNumber();
+			
+			stmt.executeUpdate(sql);
+		}
+		catch(Exception e){ 
+			System.out.println(e);
+		}
+	}
+	
 	// find a bank account with a given customer number
 	public BankAccount getCustomersBankAccount(int customerNumber) {
 		int bankAccountNumber = 0;
@@ -163,6 +183,23 @@ public class Database {
 		}
 		
 		return brands;
+	}
+	
+	// update a given bank account in the database
+	public void updateBrand(Brand brand) {
+		try {
+			Statement stmt = conn.createStatement();
+			
+			String sql = "Update brands "
+					+ "set brandName = '" + brand.getBrandName() + "', "
+					+ "description = '" + brand.getDescription() + "' "
+					+ "where vendorNumber = " + brand.getVendorNumber();
+			
+			stmt.executeUpdate(sql);
+		}
+		catch(Exception e){ 
+			System.out.println(e);
+		}
 	}
 	
 	// find a customer with a given customerNumber
@@ -241,6 +278,30 @@ public class Database {
 		return customers;
 	}
 	
+	// update a given customer in the database
+	public void updateCustomer(Customer customer) {
+		try {
+			Statement stmt = conn.createStatement();
+			
+			String sql = "Update customers "
+					+ "set firstName = '" + customer.getFirstName() + "', "
+					+ "lastName = '" + customer.getLastName() + "', "
+					+ "phoneNumber = '" + customer.getPhoneNumber() + "', "
+					+ "addressLine1 = '" + customer.getAddressLine1() + "', "
+					+ "addressLine2 = '" + customer.getAddressLine2() + "', "
+					+ "city = '" + customer.getCity() + "', "
+					+ "state = '" + customer.getState() + "', "
+					+ "postalCode = " + customer.getPostalCode() + ", "
+					+ "country = '" + customer.getCountry() + "' "
+					+ "where customerNumber = " + customer.getCustomerNumber();
+			
+			stmt.executeUpdate(sql);
+		}
+		catch(Exception e){ 
+			System.out.println(e);
+		}
+	}
+	
 	// get an order using a given order number
 	public Order getOrder(int orderNumber) {
 		int customerNumber = 0;
@@ -261,8 +322,8 @@ public class Database {
 				orderDate = rs.getDate(3);
 				requiredDate = rs.getDate(4);
 				shippedDate = rs.getDate(5);
-				status = "";
-				comments = "";
+				status = rs.getString(6);
+				comments = rs.getString(7);
 				
 				orderDetails = getOrderDetails(orderNumber);
 			}
@@ -294,6 +355,30 @@ public class Database {
 		return orders;
 	}
 	
+	// update a given order in the database
+	public void updateOrder(Order order) {
+		try {
+			Statement stmt = conn.createStatement();
+			
+			String sql = "Update orders "
+					+ "set orderDate = '" + order.getOrderDate() + "', "
+					+ "requiredDate = '" + order.getRequiredDate() + "', "
+					+ "shippedDate = '" + order.getShippedDate() + "', "
+					+ "status = '" + order.getStatus() + "', "
+					+ "comments = '" + order.getComments() + "' "
+					+ "where orderNumber = " + order.getOrderNumber();
+			
+			stmt.executeUpdate(sql);
+			
+			for(OrderDetail detail : order.getOrderDetails()) {
+				updateOrderDetail(detail);
+			}
+		}
+		catch(Exception e){ 
+			System.out.println(e);
+		}
+	}
+	
 	// get all order details from a given order
 	public List<OrderDetail> getOrderDetails(int orderNumber) {
 		List<OrderDetail> orderDetails = new ArrayList<OrderDetail>();
@@ -320,6 +405,27 @@ public class Database {
 			System.out.println(e);
 		}
 		return orderDetails;
+	}
+	
+	// update a given order detail in the database
+	public void updateOrderDetail(OrderDetail orderDetail) {
+		try {
+			Statement stmt = conn.createStatement();
+			
+			String sql = "Update orderdetails "
+					+ "set orderLineNumber = " + orderDetail.getOrderLineNumber() + ", "
+					+ "quantityOrdered = " + orderDetail.getQuantityOrdered() + ", "
+					+ "priceEach = " + orderDetail.getPriceEach() + " "
+					+ "where orderNumber = " + orderDetail.getOrderNumber() + " "
+					+ "and productNumber = " + orderDetail.getProductNumber();
+			
+			stmt.executeUpdate(sql);
+			
+			updateProduct(orderDetail.getProduct());
+		}
+		catch(Exception e){ 
+			System.out.println(e);
+		}
 	}
 	
 	// find a product using a given product number
@@ -353,6 +459,28 @@ public class Database {
 				vendorNumber, productLineNumber, productDescription, 
 				quantityInStock, msrp, discountPercent);
 		return product;
+	}
+	
+	// update a given product in the database
+	public void updateProduct(Product product) {
+		try {
+			Statement stmt = conn.createStatement();
+			
+			String sql = "Update products "
+					+ "set productName = '" + product.getProductName() + "', "
+					+ "vendorNumber = " + product.getVendorNumber() + ", "
+					+ "productLineNumber = " + product.getProductLineNumber() + ", "
+					+ "productDescription = '" + product.getProductDescription() + "', "
+					+ "quantityInStock = " + product.getQuantityInStock() + ", "
+					+ "MSRP = " + product.getMRSP() + ", "
+					+ "discountPercent = " + product.getDiscountPercent() + " "
+					+ "where productNumber = " + product.getProductNumber();
+			
+			stmt.executeUpdate(sql);
+		}
+		catch(Exception e){ 
+			System.out.println(e);
+		}
 	}
 	
 	// find all product lines

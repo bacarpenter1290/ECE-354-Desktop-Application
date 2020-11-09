@@ -1,5 +1,7 @@
 package entities;
 
+import services.CustomException;
+
 public class BankAccount {
 	private int bankAccountNumber;
 	private int customerNumber;
@@ -77,7 +79,14 @@ public class BankAccount {
 		return balance;
 	}
 
-	public void setBalance(double balance) {
-		this.balance = balance;
+	public void withdraw(double withdrawAmount) throws CustomException {
+		if(balance > withdrawAmount)
+			this.balance -= withdrawAmount;
+		else
+			throw new CustomException("BALANCE_LOW_EXCEPTION", "Balance is too low for withdraw");
+	}
+	
+	public void deposit(double depositAmount) {
+		this.balance += depositAmount;
 	}
 }

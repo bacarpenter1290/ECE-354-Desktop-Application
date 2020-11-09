@@ -4,4 +4,7 @@
 <fullyQualifiedTypeName name="java.sql.Date"/>
 <fullyQualifiedTypeName name="java.util.ArrayList"/>
 <fullyQualifiedTypeName name="java.util.List"/>
+<fullyQualifiedTypeName name="database.CustomException"/>
+<fullyQualifiedTypeName name="services.CustomException"/>
+<fullyQualifiedTypeName name="entities.BankAccount"/>
 </qualifiedTypeNameHistroy>
