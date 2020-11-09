@@ -1,245 +1,33 @@
--- MySQL Workbench Forward Engineering
+-- MySQL dump 10.13  Distrib 8.0.22, for Win64 (x86_64)
+--
+-- Host: 127.0.0.1    Database: coconinodatabase
+-- ------------------------------------------------------
+-- Server version	8.0.22
 
-SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
-SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
-SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!50503 SET NAMES utf8 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
--- -----------------------------------------------------
--- Schema coconinodatabase
--- -----------------------------------------------------
-
--- -----------------------------------------------------
--- Schema coconinodatabase
--- -----------------------------------------------------
-CREATE SCHEMA IF NOT EXISTS `coconinodatabase` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci ;
-USE `coconinodatabase` ;
-
--- -----------------------------------------------------
--- Table `coconinodatabase`.`statesalestaxrates`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `coconinodatabase`.`statesalestaxrates` (
-  `state` VARCHAR(2) NOT NULL,
-  `salesTaxRatePercent` DOUBLE NOT NULL,
-  PRIMARY KEY (`state`),
-  UNIQUE INDEX `state_UNIQUE` (`state` ASC) VISIBLE)
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8
-COLLATE = utf8_bin;
-
-
--- -----------------------------------------------------
--- Table `coconinodatabase`.`customers`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `coconinodatabase`.`customers` (
-  `customerNumber` INT NOT NULL AUTO_INCREMENT,
-  `firstName` VARCHAR(100) NOT NULL,
-  `lastName` VARCHAR(100) NOT NULL,
-  `phoneNumber` VARCHAR(15) NULL DEFAULT NULL,
-  `addressLine1` VARCHAR(100) NOT NULL,
-  `addressLine2` VARCHAR(100) NULL DEFAULT NULL,
-  `city` VARCHAR(100) NOT NULL,
-  `state` VARCHAR(45) NOT NULL,
-  `postalCode` INT NOT NULL,
-  `country` VARCHAR(100) NOT NULL,
-  PRIMARY KEY (`customerNumber`),
-  UNIQUE INDEX `customerNumber_UNIQUE` (`customerNumber` ASC) VISIBLE,
-  INDEX `customersToStateSalesTaxRates` (`state` ASC) VISIBLE,
-  CONSTRAINT `customersToStateSalesTaxRates`
-    FOREIGN KEY (`state`)
-    REFERENCES `coconinodatabase`.`statesalestaxrates` (`state`))
-ENGINE = InnoDB
-AUTO_INCREMENT = 8
-DEFAULT CHARACTER SET = utf8
-COLLATE = utf8_bin;
-
-
--- -----------------------------------------------------
--- Table `coconinodatabase`.`bankaccounts`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `coconinodatabase`.`bankaccounts` (
-  `bankAccountNumber` INT NOT NULL AUTO_INCREMENT,
-  `customerNumber` INT NOT NULL,
-  `bank` VARCHAR(1000) NOT NULL,
-  `routingNumber` INT NOT NULL,
-  `accountNumber` INT NOT NULL,
-  `balance` DECIMAL(13,2) NOT NULL DEFAULT '0.00',
-  PRIMARY KEY (`bankAccountNumber`),
-  UNIQUE INDEX `BankAccountNumber_UNIQUE` (`bankAccountNumber` ASC) INVISIBLE,
-  INDEX `bankAccountsToCustomers_idx` (`customerNumber` ASC) VISIBLE,
-  CONSTRAINT `bankAccountsToCustomers`
-    FOREIGN KEY (`customerNumber`)
-    REFERENCES `coconinodatabase`.`customers` (`customerNumber`))
-ENGINE = InnoDB
-AUTO_INCREMENT = 12
-DEFAULT CHARACTER SET = utf8
-COLLATE = utf8_bin;
-
-
--- -----------------------------------------------------
--- Table `coconinodatabase`.`brands`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `coconinodatabase`.`brands` (
-  `vendorNumber` INT NOT NULL AUTO_INCREMENT,
-  `brandName` VARCHAR(100) NOT NULL,
-  `description` VARCHAR(2500) NOT NULL,
-  PRIMARY KEY (`vendorNumber`),
-  UNIQUE INDEX `vendorNumber_UNIQUE` (`vendorNumber` ASC) VISIBLE)
-ENGINE = InnoDB
-AUTO_INCREMENT = 9
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
-
-
--- -----------------------------------------------------
--- Table `coconinodatabase`.`orders`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `coconinodatabase`.`orders` (
-  `orderNumber` INT NOT NULL AUTO_INCREMENT,
-  `customerNumber` INT NOT NULL,
-  `orderDate` DATE NOT NULL,
-  `requiredDate` DATE NOT NULL,
-  `shippedDate` DATE NULL DEFAULT NULL,
-  `status` VARCHAR(100) NOT NULL,
-  `comments` VARCHAR(2500) NULL DEFAULT NULL,
-  PRIMARY KEY (`orderNumber`),
-  UNIQUE INDEX `orderNumber_UNIQUE` (`orderNumber` ASC) VISIBLE,
-  INDEX `ordersToCustomer_idx` (`customerNumber` ASC) VISIBLE,
-  CONSTRAINT `ordersToCustomers`
-    FOREIGN KEY (`customerNumber`)
-    REFERENCES `coconinodatabase`.`customers` (`customerNumber`))
-ENGINE = InnoDB
-AUTO_INCREMENT = 20
-DEFAULT CHARACTER SET = utf8
-COLLATE = utf8_bin;
-
-
--- -----------------------------------------------------
--- Table `coconinodatabase`.`productlines`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `coconinodatabase`.`productlines` (
-  `productLineNumber` INT NOT NULL AUTO_INCREMENT,
-  `productLine` VARCHAR(100) NOT NULL,
-  `description` VARCHAR(2500) NOT NULL,
-  PRIMARY KEY (`productLineNumber`),
-  UNIQUE INDEX `productLineNumber_UNIQUE` (`productLineNumber` ASC) VISIBLE)
-ENGINE = InnoDB
-AUTO_INCREMENT = 6
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
-
-
--- -----------------------------------------------------
--- Table `coconinodatabase`.`products`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `coconinodatabase`.`products` (
-  `productNumber` INT NOT NULL AUTO_INCREMENT,
-  `productName` VARCHAR(1000) NOT NULL,
-  `vendorNumber` INT NOT NULL,
-  `productLineNumber` INT NOT NULL,
-  `productDescription` VARCHAR(2500) NOT NULL,
-  `quantityInStock` INT NOT NULL DEFAULT '0',
-  `MSRP` DECIMAL(13,2) NOT NULL,
-  `discountPercent` DOUBLE NOT NULL DEFAULT '0',
-  PRIMARY KEY (`productNumber`),
-  UNIQUE INDEX `productNumber_UNIQUE` (`productNumber` ASC) VISIBLE,
-  INDEX `productsToProductLines_idx` (`productLineNumber` ASC) VISIBLE,
-  INDEX `productsToBrands_idx` (`vendorNumber` ASC) VISIBLE,
-  CONSTRAINT `productsToBrands`
-    FOREIGN KEY (`vendorNumber`)
-    REFERENCES `coconinodatabase`.`brands` (`vendorNumber`),
-  CONSTRAINT `productsToProductLines`
-    FOREIGN KEY (`productLineNumber`)
-    REFERENCES `coconinodatabase`.`productlines` (`productLineNumber`))
-ENGINE = InnoDB
-AUTO_INCREMENT = 12
-DEFAULT CHARACTER SET = utf8
-COLLATE = utf8_bin;
-
-
--- -----------------------------------------------------
--- Table `coconinodatabase`.`orderdetails`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `coconinodatabase`.`orderdetails` (
-  `orderNumber` INT NOT NULL,
-  `productNumber` INT NOT NULL,
-  `orderLineNumber` INT NOT NULL,
-  `quantityOrdered` INT NOT NULL,
-  `priceEach` DECIMAL(13,2) NOT NULL,
-  PRIMARY KEY (`orderNumber`, `productNumber`),
-  INDEX `orderDetailsToProdcuts_idx` (`productNumber` ASC) VISIBLE,
-  CONSTRAINT `orderDetailsToOrders`
-    FOREIGN KEY (`orderNumber`)
-    REFERENCES `coconinodatabase`.`orders` (`orderNumber`),
-  CONSTRAINT `orderDetailsToProdcuts`
-    FOREIGN KEY (`productNumber`)
-    REFERENCES `coconinodatabase`.`products` (`productNumber`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8
-COLLATE = utf8_bin;
-
-
--- -----------------------------------------------------
--- Table `coconinodatabase`.`passwords`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `coconinodatabase`.`passwords` (
-  `customerNumber` INT NOT NULL,
-  `password` VARCHAR(1000) NOT NULL,
-  PRIMARY KEY (`customerNumber`),
-  INDEX `passwords_idx` (`customerNumber` ASC) VISIBLE,
-  CONSTRAINT `passwordsToCustomers`
-    FOREIGN KEY (`customerNumber`)
-    REFERENCES `coconinodatabase`.`customers` (`customerNumber`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
-
-
--- -----------------------------------------------------
--- Table `coconinodatabase`.`shoppingcart`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `coconinodatabase`.`shoppingcart` (
-  `shoppingCartNumber` INT NOT NULL AUTO_INCREMENT,
-  `customerNumber` INT NOT NULL,
-  `createdDate` DATE NOT NULL,
-  PRIMARY KEY (`shoppingCartNumber`),
-  UNIQUE INDEX `shoppingCartNumber_UNIQUE` (`shoppingCartNumber` ASC) VISIBLE,
-  INDEX `shoppingCartToCustomers_idx` (`customerNumber` ASC) VISIBLE,
-  CONSTRAINT `shoppingCartToCustomers`
-    FOREIGN KEY (`customerNumber`)
-    REFERENCES `coconinodatabase`.`customers` (`customerNumber`))
-ENGINE = InnoDB
-AUTO_INCREMENT = 4
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
-
-
--- -----------------------------------------------------
--- Table `coconinodatabase`.`shoppingcartdetails`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `coconinodatabase`.`shoppingcartdetails` (
-  `shoppingCartNumber` INT NOT NULL,
-  `productNumber` INT NOT NULL,
-  `quantity` INT NOT NULL,
-  PRIMARY KEY (`shoppingCartNumber`, `productNumber`),
-  INDEX `shoppingCartDetailsToProducts_idx` (`productNumber` ASC) VISIBLE,
-  CONSTRAINT `shoppingCartDetailsToProducts`
-    FOREIGN KEY (`productNumber`)
-    REFERENCES `coconinodatabase`.`products` (`productNumber`),
-  CONSTRAINT `shoppingCartDetailsToShoppingCart`
-    FOREIGN KEY (`shoppingCartNumber`)
-    REFERENCES `coconinodatabase`.`shoppingcart` (`shoppingCartNumber`))
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8mb4
-COLLATE = utf8mb4_0900_ai_ci;
-
-USE `coconinodatabase` ;
-
--- -----------------------------------------------------
--- procedure AddProductToCart
--- -----------------------------------------------------
-
-DELIMITER $$
-USE `coconinodatabase`$$
+--
+-- Dumping routines for database 'coconinodatabase'
+--
+/*!50003 DROP PROCEDURE IF EXISTS `AddProductToCart` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `AddProductToCart`(
 	CustomerNumber int
 	,ProductNumber int
@@ -280,16 +68,22 @@ BEGIN
         WHERE shoppingcartdetails.shoppingCartNumber = @ShoppingCartNumber 
 				AND shoppingcartdetails.productNumber = ProductNumber;
 	END IF;
-END$$
-
+END ;;
 DELIMITER ;
-
--- -----------------------------------------------------
--- procedure Checkout
--- -----------------------------------------------------
-
-DELIMITER $$
-USE `coconinodatabase`$$
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `Checkout` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `Checkout`(
 	CustomerNumber int
     ,SelectedBankAccountNumber int
@@ -454,16 +248,22 @@ sp: BEGIN
 	ELSEIF (@Total > @Balance) THEN
 		SELECT "Insufficient Funds";
 	END IF;
-END$$
-
+END ;;
 DELIMITER ;
-
--- -----------------------------------------------------
--- procedure CreateBankAccount
--- -----------------------------------------------------
-
-DELIMITER $$
-USE `coconinodatabase`$$
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `CreateBankAccount` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `CreateBankAccount`(
 	customerNumber int
     ,bank VARCHAR(1000)
@@ -474,16 +274,22 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `CreateBankAccount`(
 BEGIN
 	INSERT INTO `coconinodatabase`.`bankaccounts` (customerNumber, bank, routingNumber, accountNumber, balance)
 	VALUES (customerNumber, bank, routingNumber, accountNumber, balance);
-END$$
-
+END ;;
 DELIMITER ;
-
--- -----------------------------------------------------
--- procedure SelectAllProductsFromBrand
--- -----------------------------------------------------
-
-DELIMITER $$
-USE `coconinodatabase`$$
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `SelectAllProductsFromBrand` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `SelectAllProductsFromBrand`(
 	brandName varchar(100)
 )
@@ -492,16 +298,22 @@ BEGIN
 	FROM `coconinodatabase`.`products` AS products
 	INNER JOIN `coconinodatabase`.`brands` AS brands ON products.vendorNumber = brands.vendorNumber
 	WHERE brands.brandName = brandName;
-END$$
-
+END ;;
 DELIMITER ;
-
--- -----------------------------------------------------
--- procedure SelectAllProductsFromProductLine
--- -----------------------------------------------------
-
-DELIMITER $$
-USE `coconinodatabase`$$
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `SelectAllProductsFromProductLine` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `SelectAllProductsFromProductLine`(
 	ProductLine varchar(100)
 )
@@ -510,16 +322,22 @@ BEGIN
 	FROM `coconinodatabase`.`products` AS products
 	INNER JOIN `coconinodatabase`.`productlines` AS productlines ON products.productLineNumber = productlines.productLineNumber
 	WHERE LOWER(productlines.productLine) = LOWER(ProductLine);
-END$$
-
+END ;;
 DELIMITER ;
-
--- -----------------------------------------------------
--- procedure SelectCustomersFrom
--- -----------------------------------------------------
-
-DELIMITER $$
-USE `coconinodatabase`$$
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `SelectCustomersFrom` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `SelectCustomersFrom`(
 	City varchar(100)
     ,State varchar(2)
@@ -527,43 +345,61 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `SelectCustomersFrom`(
 BEGIN
 	SELECT * FROM coconinodatabase.customers
 	WHERE customers.city = City AND customers.state = State;
-END$$
-
+END ;;
 DELIMITER ;
-
--- -----------------------------------------------------
--- procedure SelectDistinctCities
--- -----------------------------------------------------
-
-DELIMITER $$
-USE `coconinodatabase`$$
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `SelectDistinctCities` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `SelectDistinctCities`()
 BEGIN
 	SELECT DISTINCT city, state FROM coconinodatabase.customers;
-END$$
-
+END ;;
 DELIMITER ;
-
--- -----------------------------------------------------
--- procedure SelectOrdersLastMonth
--- -----------------------------------------------------
-
-DELIMITER $$
-USE `coconinodatabase`$$
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `SelectOrdersLastMonth` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `SelectOrdersLastMonth`()
 BEGIN
 	SELECT * FROM `coconinodatabase`.`orders`
 	WHERE month(orderDate) = month(date_add(current_date(), INTERVAL -1 MONTH));
-END$$
-
+END ;;
 DELIMITER ;
-
--- -----------------------------------------------------
--- procedure SelectPastCustomerOrders
--- -----------------------------------------------------
-
-DELIMITER $$
-USE `coconinodatabase`$$
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `SelectPastCustomerOrders` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `SelectPastCustomerOrders`(
 	/* TimeRange is the length of the time period queried over
     TimeParameter is either day, week, month, or year */
@@ -589,32 +425,44 @@ BEGIN
 		SELECT * FROM orders
         WHERE orders.customerNumber = CustomerNumber AND month(orderDate) >= month(date_add(current_date(), INTERVAL -6 MONTH));
 	END IF;
-END$$
-
+END ;;
 DELIMITER ;
-
--- -----------------------------------------------------
--- procedure SelectProductsLessThan
--- -----------------------------------------------------
-
-DELIMITER $$
-USE `coconinodatabase`$$
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `SelectProductsLessThan` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `SelectProductsLessThan`(
 	Number int
 )
 BEGIN
 	SELECT * FROM coconinodatabase.products
     WHERE products.quantityInStock < Number;
-END$$
-
+END ;;
 DELIMITER ;
-
--- -----------------------------------------------------
--- procedure UpdateProductsLessThan
--- -----------------------------------------------------
-
-DELIMITER $$
-USE `coconinodatabase`$$
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `UpdateProductsLessThan` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `UpdateProductsLessThan`(
 	Number int
 )
@@ -626,10 +474,20 @@ BEGIN
 	UPDATE coconinodatabase.products
 	SET products.quantityInStock = Number
 	WHERE products.quantityInStock < Number;
-END$$
-
+END ;;
 DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
-SET SQL_MODE=@OLD_SQL_MODE;
-SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
-SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2020-11-08 23:57:22
