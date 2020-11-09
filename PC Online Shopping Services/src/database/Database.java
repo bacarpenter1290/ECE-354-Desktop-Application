@@ -22,8 +22,39 @@ public class Database {
 		}  
 	}
 	
-	public BankAccount getBankAccount(int pk) {
-		int bankAccountNumber = 0;
+	public void close() {
+		try {
+			conn.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	// checks if a given password is correct
+	public boolean isPasswordCorrect(int customerNumber, String pass) {
+		boolean isPasswordCorrect = false;
+		String passHash = "";
+		
+		// get the stored hash from the database
+		try {
+			Statement stmt = conn.createStatement();
+			ResultSet rs = stmt.executeQuery("select * from passwords where customerNumber = " + customerNumber);
+			while(rs.next()) {
+				passHash = rs.getString(2);
+			}
+		}
+		catch(Exception e){ 
+			System.out.println(e);
+		}
+		
+		// if the stored hash equals to hash of the given password, it's the right password
+		if (passHash.equals(Sha1.hash(pass))) {
+			isPasswordCorrect = true;
+		}
+		return isPasswordCorrect;
+	}
+	
+	public BankAccount getBankAccount(int bankAccountNumber) {
 		int customerNumber = 0;
 		String bank = "";
 		int routingNumber = 0;
@@ -33,7 +64,7 @@ public class Database {
 		BankAccount aBankAccount;	
 		try {
 			Statement stmt = conn.createStatement();
-			ResultSet rs = stmt.executeQuery("select * from bankaccounts where bankAccountNumber = " + pk);
+			ResultSet rs = stmt.executeQuery("select * from bankaccounts where bankAccountNumber = " + bankAccountNumber);
 			while(rs.next()) {
 				bankAccountNumber = rs.getInt(1);
 				customerNumber = rs.getInt(2);
@@ -42,7 +73,6 @@ public class Database {
 				accountNumber = rs.getInt(5);
 				balance = rs.getDouble(6);
 			}
-			conn.close();
 		}
 		catch(Exception e){ 
 			System.out.println(e);
