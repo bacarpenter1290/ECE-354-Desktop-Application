@@ -25,6 +25,11 @@ public class Order {
 		this.comments = comments;
 	}
 	
+	public Order(int customerNumber, String comments) {
+		this.customerNumber = customerNumber;
+		this.comments = comments;
+	}
+	
 	public Order() {
 		this.orderNumber = 0;
 		this.customerNumber = 0;

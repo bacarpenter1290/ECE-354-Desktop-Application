@@ -1,38 +1,32 @@
 package entities;
 
-import services.CustomException;
-
 public class BankAccount {
 	private int bankAccountNumber;
 	private int customerNumber;
 	private String bank;
 	private int routingNumber;
 	private int accountNumber;
-	private double balance;
 	
 	public BankAccount() {
 		bankAccountNumber = 0;
 		customerNumber = 0;
 		bank = "";
 		routingNumber = 0;
-		accountNumber = 0;
-		balance = 0;
 	}
 	
-	public BankAccount(int aBankAccountNumber, int aCustomerNumber, String aBank, int aRoutingNumber, int aAccountNumber, double aBalance) {
+	public BankAccount(int aBankAccountNumber, int aCustomerNumber, String aBank, int aRoutingNumber, int aAccountNumber) {
 		bankAccountNumber = aBankAccountNumber;
 		customerNumber = aCustomerNumber;
 		bank = aBank;
 		routingNumber = aRoutingNumber;
 		accountNumber = aAccountNumber;
-		balance = aBalance;
 	}
 	
 	@Override
 	public String toString() {
 		return "BankAccount [bankAccountNumber=" + bankAccountNumber + ", customerNumber=" + customerNumber + ", bank="
-				+ bank + ", routingNumber=" + routingNumber + ", accountNumber=" + accountNumber + ", balance="
-				+ balance + "]";
+				+ bank + ", routingNumber=" + routingNumber + ", accountNumber=" + accountNumber + 
+				"]";
 	}
 
 	public int getBankAccountNumber() {
@@ -73,20 +67,5 @@ public class BankAccount {
 
 	public void setAccountNumber(int accountNumber) {
 		this.accountNumber = accountNumber;
-	}
-
-	public double getBalance() {
-		return balance;
-	}
-
-	public void withdraw(double withdrawAmount) throws CustomException {
-		if(balance > withdrawAmount)
-			this.balance -= withdrawAmount;
-		else
-			throw new CustomException("BALANCE_LOW_EXCEPTION", "Balance is too low for withdraw");
-	}
-	
-	public void deposit(double depositAmount) {
-		this.balance += depositAmount;
 	}
 }

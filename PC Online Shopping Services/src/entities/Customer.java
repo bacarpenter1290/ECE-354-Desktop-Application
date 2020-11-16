@@ -9,11 +9,11 @@ public class Customer {
 	private String addressLine2;
 	private String city;
 	private String state;
-	private String postalCode;
+	private int postalCode;
 	private String country;
 	
 	public Customer(int customerNumber, String firstName, String lastName, String phoneNumber, String addressLine1,
-			String addressLine2, String city, String state, String postalCode, String country) {
+			String addressLine2, String city, String state, int postalCode, String country) {
 		this.customerNumber = customerNumber;
 		this.firstName = firstName;
 		this.lastName = lastName;
@@ -35,7 +35,7 @@ public class Customer {
 		this.addressLine2 = "";
 		this.city = "";
 		this.state = "";
-		this.postalCode = "";
+		this.postalCode = 0;
 		this.country = "";
 	}
 
@@ -110,11 +110,11 @@ public class Customer {
 		this.state = state;
 	}
 
-	public String getPostalCode() {
+	public int getPostalCode() {
 		return postalCode;
 	}
 
-	public void setPostalCode(String postalCode) {
+	public void setPostalCode(int postalCode) {
 		this.postalCode = postalCode;
 	}
 

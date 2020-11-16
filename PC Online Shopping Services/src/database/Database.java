@@ -2,7 +2,9 @@ package database;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.sql.Date;
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 import entities.*;
@@ -66,7 +68,6 @@ public class Database {
 		String bank = "";
 		int routingNumber = 0;
 		int accountNumber = 0;
-		double balance = 0;
 		
 		BankAccount aBankAccount;	
 		try {
@@ -78,13 +79,12 @@ public class Database {
 				bank = rs.getString(3);
 				routingNumber = rs.getInt(4);
 				accountNumber = rs.getInt(5);
-				balance = rs.getDouble(6);
 			}
 		}
 		catch(Exception e){ 
 			System.out.println(e);
 		}
-		aBankAccount = new BankAccount(bankAccountNumber, customerNumber, bank, routingNumber, accountNumber, balance);
+		aBankAccount = new BankAccount(bankAccountNumber, customerNumber, bank, routingNumber, accountNumber);
 		
 		return aBankAccount;
 	}
@@ -97,8 +97,7 @@ public class Database {
 			String sql = "Update bankaccounts "
 					+ "set bank = '" + bankAccount.getBank() + "', "
 					+ "routingNumber = '" + bankAccount.getAccountNumber() + "', "
-					+ "accountNumber = '" + bankAccount.getRoutingNumber() + "', "
-					+ "balance = " + bankAccount.getBalance() + " "
+					+ "accountNumber = '" + bankAccount.getRoutingNumber() + "' "
 					+ "where bankAccountNumber = " + bankAccount.getBankAccountNumber();
 			
 			stmt.executeUpdate(sql);
@@ -108,13 +107,40 @@ public class Database {
 		}
 	}
 	
+	// create a bank account
+	public BankAccount createBankAccount(BankAccount bankAccount) {
+		int bankAccountNumber = 0;
+		try {
+			Statement stmt = conn.createStatement();
+			
+			String sql = "Insert into bankaccounts (customerNumber, bank, routingNumber, accountNumber) "
+					+ "values (" + bankAccount.getCustomerNumber() + ", '"
+					+ bankAccount.getBank() + "', "
+					+ bankAccount.getRoutingNumber() + ", "
+					+ bankAccount.getAccountNumber() + ")";
+			
+			stmt.executeUpdate(sql);
+			
+			Statement ret = conn.createStatement();
+			sql = "Select LAST_INSERT_ID()";
+			ResultSet rs = ret.executeQuery(sql);
+			while (rs.next()) {
+				bankAccountNumber = rs.getInt(1);
+			}
+			bankAccount.setBankAccountNumber(bankAccountNumber);
+		}
+		catch(Exception e){ 
+			System.out.println(e);
+		}
+		return bankAccount;
+	}
+	
 	// find a bank account with a given customer number
 	public BankAccount getCustomersBankAccount(int customerNumber) {
 		int bankAccountNumber = 0;
 		String bank = "";
 		int routingNumber = 0;
 		int accountNumber = 0;
-		double balance = 0;
 		
 		BankAccount aBankAccount;	
 		try {
@@ -126,13 +152,12 @@ public class Database {
 				bank = rs.getString(3);
 				routingNumber = rs.getInt(4);
 				accountNumber = rs.getInt(5);
-				balance = rs.getDouble(6);
 			}
 		}
 		catch(Exception e){ 
 			System.out.println(e);
 		}
-		aBankAccount = new BankAccount(bankAccountNumber, customerNumber, bank, routingNumber, accountNumber, balance);
+		aBankAccount = new BankAccount(bankAccountNumber, customerNumber, bank, routingNumber, accountNumber);
 		
 		return aBankAccount;
 	}
@@ -211,7 +236,7 @@ public class Database {
 		String addressLine2 = "";
 		String city = "";
 		String state = "";
-		String postalCode = "";
+		int postalCode = 0;
 		String country = "";
 		
 		Customer aCustomer;	
@@ -227,7 +252,7 @@ public class Database {
 				addressLine2 = rs.getString(6);
 				city = rs.getString(7);
 				state = rs.getString(8);
-				postalCode = rs.getString(9);
+				postalCode = rs.getInt(9);
 				country = rs.getString(10);
 			}
 		}
@@ -237,6 +262,39 @@ public class Database {
 		aCustomer = new Customer(customerNumber, firstName, lastName, phoneNumber, addressLine1, addressLine2, city, state, postalCode, country);
 		
 		return aCustomer;
+	}
+	
+	// create a customer account
+	public Customer createCustomer(Customer customer) {
+		int customerNumber = 0;
+		try {
+			Statement stmt = conn.createStatement();
+			
+			String sql = "Insert into customers (firstName, lastName, phoneNumber, addressLine1, addressLine2, city, state, postalCode, country) "
+					+ "values ('" + customer.getFirstName() + "', '"
+					+ customer.getLastName() + "', '"
+					+ customer.getPhoneNumber() + "', '"
+					+ customer.getAddressLine1() + "', '"
+					+ customer.getAddressLine2() + "', '"
+					+ customer.getCity() + "', '"
+					+ customer.getState() + "', "
+					+ customer.getPostalCode() + ", '"
+					+ customer.getCountry() + "')";
+			
+			stmt.executeUpdate(sql);
+			
+			Statement ret = conn.createStatement();
+			sql = "Select LAST_INSERT_ID()";
+			ResultSet rs = ret.executeQuery(sql);
+			while (rs.next()) {
+				customerNumber = rs.getInt(1);
+			}
+			customer.setCustomerNumber(customerNumber);
+		}
+		catch(Exception e){ 
+			System.out.println(e);
+		}
+		return customer;
 	}
 	
 	// find all customers
@@ -255,7 +313,7 @@ public class Database {
 				String addressLine2 = "";
 				String city = "";
 				String state = "";
-				String postalCode = "";
+				int postalCode = 0;
 				String country = "";
 				
 				customerNumber = rs.getInt(1);
@@ -266,7 +324,7 @@ public class Database {
 				addressLine2 = rs.getString(6);
 				city = rs.getString(7);
 				state = rs.getString(8);
-				postalCode = rs.getString(9);
+				postalCode = rs.getInt(9);
 				country = rs.getString(10);
 				
 				customers.add(new Customer(customerNumber, firstName, lastName, phoneNumber, addressLine1, addressLine2, city, state, postalCode, country));
@@ -355,6 +413,43 @@ public class Database {
 		return orders;
 	}
 	
+	// create an order
+	public Order createOrder(Order order) {
+		int orderNumber = 0;
+		try {
+			Statement stmt = conn.createStatement();
+			
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+			java.util.Date today = new java.util.Date();
+			Calendar cal = Calendar.getInstance();
+			cal.add(Calendar.DAY_OF_MONTH, 7);
+			String formattedRequiredDate = sdf.format(cal.getTime());
+			
+			String sql = "Insert into orders (customerNumber, orderDate, requiredDate, status, comments) "
+					+ "values (" + order.getCustomerNumber() + ", '"
+					+ sdf.format(today) + "', '"
+					+ formattedRequiredDate + "', '"
+					+ "processing" + "', '"
+					+ order.getComments() + "')";
+			
+			stmt.executeUpdate(sql);
+			
+			Statement ret = conn.createStatement();
+			sql = "Select LAST_INSERT_ID()";
+			ResultSet rs = ret.executeQuery(sql);
+			while (rs.next()) {
+				orderNumber = rs.getInt(1);
+			}
+			order.setOrderNumber(orderNumber);
+			
+			this.createOrderDetails(order.getOrderDetails(), orderNumber);
+		}
+		catch(Exception e){ 
+			System.out.println(e);
+		}
+		return order;
+	}
+	
 	// update a given order in the database
 	public void updateOrder(Order order) {
 		try {
@@ -405,6 +500,37 @@ public class Database {
 			System.out.println(e);
 		}
 		return orderDetails;
+	}
+	
+	public void createOrderDetails(List<OrderDetail> orderDetails, int orderNumber) {
+		for(int i = 0; i < orderDetails.size(); i++) {
+			OrderDetail curr = orderDetails.get(i);
+			curr.setOrderNumber(orderNumber);
+			curr.setOrderLineNumber(i + 1);
+			Product product = this.getProduct(curr.getProductNumber());
+			curr.setPriceEach(product.getMRSP() * (1 - (product.getDiscountPercent() / 100)));
+			this.createOrderDetail(curr);
+		}
+	}
+	
+	// create an orderDetail 
+	public OrderDetail createOrderDetail(OrderDetail orderDetail) {
+		try {
+			Statement stmt = conn.createStatement();
+			
+			String sql = "Insert into orderdetails (orderNumber, productNumber, orderLineNumber, quantityOrdered, priceEach) "
+					+ "values (" + orderDetail.getOrderNumber() + ", "
+					+ orderDetail.getProductNumber() + ", "
+					+ orderDetail.getOrderLineNumber() + ", "
+					+ orderDetail.getQuantityOrdered() + ", "
+					+ orderDetail.getPriceEach() + ")";
+			
+			stmt.executeUpdate(sql);
+		}
+		catch(Exception e){ 
+			System.out.println(e);
+		}
+		return orderDetail;
 	}
 	
 	// update a given order detail in the database
@@ -505,6 +631,23 @@ public class Database {
 			System.out.println(e);
 		}
 		return productLines;
+	}
+	
+	// update product lines
+	public void updateProductLine(ProductLine productLine) {
+		try {
+			Statement stmt = conn.createStatement();
+			
+			String sql = "Update productlines "
+					+ "set productLine = '" + productLine.getProductLine() + "', "
+					+ "description = " + productLine.getDescription() + " "
+					+ "where productLineNumber = " + productLine.getProductLineNumber();
+			
+			stmt.executeUpdate(sql);
+		}
+		catch(Exception e){ 
+			System.out.println(e);
+		}
 	}
 	
 	// find all brands
