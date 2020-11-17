@@ -50,5 +50,4 @@ public class ShoppingCartDetail {
 	public void setProduct(Product product) {
 		this.product = product;
 	}
-	
 }

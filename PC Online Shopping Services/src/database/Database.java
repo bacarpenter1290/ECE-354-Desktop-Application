@@ -265,7 +265,7 @@ public class Database {
 	}
 	
 	// create a customer account
-	public Customer createCustomer(Customer customer) {
+	public Customer createCustomer(Customer customer, String pass) {
 		int customerNumber = 0;
 		try {
 			Statement stmt = conn.createStatement();
@@ -290,6 +290,11 @@ public class Database {
 				customerNumber = rs.getInt(1);
 			}
 			customer.setCustomerNumber(customerNumber);
+			
+			sql = "Insert into passwords (customerNumber, password) "
+					+ "values (" + customerNumber + ", '" + Sha1.hash(pass) + "')";
+			
+			stmt.executeUpdate(sql);
 		}
 		catch(Exception e){ 
 			System.out.println(e);
@@ -508,7 +513,7 @@ public class Database {
 			curr.setOrderNumber(orderNumber);
 			curr.setOrderLineNumber(i + 1);
 			Product product = this.getProduct(curr.getProductNumber());
-			curr.setPriceEach(product.getMRSP() * (1 - (product.getDiscountPercent() / 100)));
+			curr.setPriceEach(product.getMSRP() * (1 - (product.getDiscountPercent() / 100)));
 			this.createOrderDetail(curr);
 		}
 	}
@@ -598,7 +603,7 @@ public class Database {
 					+ "productLineNumber = " + product.getProductLineNumber() + ", "
 					+ "productDescription = '" + product.getProductDescription() + "', "
 					+ "quantityInStock = " + product.getQuantityInStock() + ", "
-					+ "MSRP = " + product.getMRSP() + ", "
+					+ "MSRP = " + product.getMSRP() + ", "
 					+ "discountPercent = " + product.getDiscountPercent() + " "
 					+ "where productNumber = " + product.getProductNumber();
 			
@@ -631,6 +636,29 @@ public class Database {
 			System.out.println(e);
 		}
 		return productLines;
+	}
+	
+	// find all product lines
+	public ProductLine getProductLine(int productLineNumber) {
+		ProductLine productLine = new ProductLine();
+		try {
+			Statement stmt = conn.createStatement();
+			ResultSet rs = stmt.executeQuery("select * from productlines where productLineNumber = " + productLineNumber);
+			while(rs.next()) {
+				String strProductLine = "";
+				String description = "";
+				
+				productLineNumber = rs.getInt(1);
+				strProductLine = rs.getString(2);
+				description = rs.getString(3);
+				
+				productLine = new ProductLine(productLineNumber, strProductLine, description);
+			}
+		}
+		catch(Exception e) {
+			System.out.println(e);
+		}
+		return productLine;
 	}
 	
 	// update product lines
@@ -748,6 +776,17 @@ public class Database {
 				customerNumber = rs.getInt(2);
 				createdDate = rs.getDate(3);
 			}
+			
+			if(shoppingCartNumber == 0) {
+				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+				java.util.Date today = new java.util.Date();
+				
+				Statement insert = conn.createStatement();
+				insert.executeUpdate("Insert into shoppingcart (customerNumber, createdDate) "
+						+ "values (" + customerNumber + ", '" + sdf.format(today) + "')");
+				
+				return this.getShoppingCart(customerNumber);
+			}
 		}
 		catch(Exception e) {
 			System.out.println(e);
@@ -779,5 +818,57 @@ public class Database {
 			System.out.println(e);
 		}
 		return shoppingCartDetails;
+	}
+	
+	// add product to cart
+	public boolean addProductToCart(Product product, int quantity, int customerNumber) {
+		ShoppingCart cart = this.getShoppingCart(customerNumber);
+		boolean alreadyInCart = false;
+		boolean addedToCart = false;
+		try {
+			for (int i = 0; i < cart.getShoppingCartDetails().size(); i++) {
+				if (cart.getShoppingCartDetails().get(i).getProductNumber() == product.getProductNumber()) {
+					alreadyInCart = true;
+					quantity += cart.getShoppingCartDetails().get(i).getQuantity();
+				}
+			}
+			
+			if(quantity <= product.getQuantityInStock()) {
+				if(alreadyInCart) {
+					Statement insert = conn.createStatement();
+					insert.executeUpdate("Update shoppingcartdetails  "
+							+ "set quantity = " + quantity + " "
+									+ "where shoppingCartNumber = " + cart.getShoppingCartNumber() + " and productNumber = " + product.getProductNumber());
+				}
+				else {
+					Statement insert = conn.createStatement();
+					insert.executeUpdate("Insert into shoppingcartdetails (shoppingCartNumber, productNumber, quantity) "
+							+ "values (" + cart.getShoppingCartNumber() + ", " + product.getProductNumber() + ", " + quantity + ")");
+				}
+				addedToCart = true;
+			}
+		}
+		catch(Exception e) {
+			addedToCart = false;
+			System.out.println(e);
+		}
+		return addedToCart;
+	}
+	
+	public double getSalesTax(String state) {
+		double salesTaxRate = 0;
+		
+		try {
+			Statement stmt = conn.createStatement();
+			ResultSet rs = stmt.executeQuery("select * from statesalestaxrates where state = '" + state + "'");
+			while(rs.next()) {				
+				salesTaxRate = rs.getDouble(2);
+			}
+		}
+		catch(Exception e) {
+			System.out.println(e);
+		}
+		
+		return salesTaxRate;
 	}
 }

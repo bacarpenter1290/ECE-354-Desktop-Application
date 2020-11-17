@@ -1,0 +1,3 @@
+.disabledText {
+	-fx-opacity: 1;
+}

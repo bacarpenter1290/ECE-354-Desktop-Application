@@ -1,0 +1,27 @@
+package services;
+
+import database.Database;
+import entities.Customer;
+
+public class OnlineShoppingService {
+	public Database db;
+	private Customer currentCustomer;
+	
+	public OnlineShoppingService() throws CustomException {
+		try {
+			db = new Database();
+		}
+		catch (CustomException e) {
+			throw e;
+		}
+		currentCustomer = new Customer();
+	}
+	
+	public void setCurrentCustomer(Customer customer) {
+		currentCustomer = customer;
+	}
+	
+	public Customer getCurrentCustomer() {
+		return currentCustomer;
+	}
+}

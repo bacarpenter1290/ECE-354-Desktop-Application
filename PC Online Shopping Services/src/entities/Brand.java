@@ -17,10 +17,16 @@ public class Brand {
 		this.description = "";
 	}
 
+	/*
 	@Override
 	public String toString() {
 		return "Brand [vendorNumber=" + vendorNumber + ", brandName=" + brandName + ", description=" + description
 				+ "]";
+	}
+	*/
+	
+	public String toString() {
+		return brandName;
 	}
 
 	public int getVendorNumber() {

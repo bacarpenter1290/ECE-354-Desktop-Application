@@ -16,7 +16,7 @@ public class Tester {
 			System.out.println(db.getBankAccount(newBank.getBankAccountNumber()));
 			
 			Customer newCustomer = new Customer(0, "Test", "Smith", "451351541", "123 Test St", "", "Hammond", "IN", 46383, "USA");
-			newCustomer = db.createCustomer(newCustomer);
+			newCustomer = db.createCustomer(newCustomer, "Test");
 			System.out.println(db.getCustomer(newCustomer.getCustomerNumber()));
 			
 			OrderDetail detail1 = new OrderDetail(0, 1, 0, 2, 0);

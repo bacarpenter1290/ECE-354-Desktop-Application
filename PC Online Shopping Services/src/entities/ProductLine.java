@@ -19,8 +19,7 @@ public class ProductLine {
 	
 	@Override
 	public String toString() {
-		return "ProductLine [productLineNumber=" + productLineNumber + ", productLine=" + productLine + ", description="
-				+ description + "]";
+		return productLine;
 	}
 	
 	public int getProductLineNumber() {

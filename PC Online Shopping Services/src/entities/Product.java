@@ -7,18 +7,18 @@ public class Product {
 	private int productLineNumber;
 	private String productDescription;
 	private int quantityInStock;
-	private double MRSP;
+	private double MSRP;
 	private double discountPercent;
 	
 	public Product(int productNumber, String productName, int vendorNumber, int productLineNumber,
-			String productDescription, int quantityInStock, double mRSP, double discountPercent) {
+			String productDescription, int quantityInStock, double mSRP, double discountPercent) {
 		this.productNumber = productNumber;
 		this.productName = productName;
 		this.vendorNumber = vendorNumber;
 		this.productLineNumber = productLineNumber;
 		this.productDescription = productDescription;
 		this.quantityInStock = quantityInStock;
-		MRSP = mRSP;
+		MSRP = mSRP;
 		this.discountPercent = discountPercent;
 	}
 	
@@ -29,16 +29,13 @@ public class Product {
 		this.productLineNumber = 0;
 		this.productDescription = "";
 		this.quantityInStock = 0;
-		MRSP = 0;
+		MSRP = 0;
 		this.discountPercent = 0;
 	}
 	
 	@Override
 	public String toString() {
-		return "Product [productNumber=" + productNumber + ", productName=" + productName + ", vendorNumber="
-				+ vendorNumber + ", productLineNumber=" + productLineNumber + ", productDescription="
-				+ productDescription + ", quantityInStock=" + quantityInStock + ", MRSP=" + MRSP + ", discountPercent="
-				+ discountPercent + "]";
+		return productName;
 	}
 	
 	public int getProductNumber() {
@@ -77,11 +74,11 @@ public class Product {
 	public void setQuantityInStock(int quantityInStock) {
 		this.quantityInStock = quantityInStock;
 	}
-	public double getMRSP() {
-		return MRSP;
+	public double getMSRP() {
+		return MSRP;
 	}
-	public void setMRSP(double mRSP) {
-		MRSP = mRSP;
+	public void setMSRP(double mSRP) {
+		MSRP = mSRP;
 	}
 	public double getDiscountPercent() {
 		return discountPercent;
