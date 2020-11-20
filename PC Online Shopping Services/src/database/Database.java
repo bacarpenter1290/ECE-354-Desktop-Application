@@ -455,6 +455,35 @@ public class Database {
 		return order;
 	}
 	
+	// create order from cart
+	public Order checkOut(ShoppingCart cart) {
+		Order order = new Order();
+		try {
+			order.setCustomerNumber(cart.getCustomerNumber());
+			List<ShoppingCartDetail> cartDetails = cart.getShoppingCartDetails();
+			List<OrderDetail> orderDetails = new ArrayList<OrderDetail>();
+			for(int i = 0; i < cartDetails.size(); i++) {
+				OrderDetail currDetail = new OrderDetail();
+				currDetail.setProduct(cartDetails.get(i).getProduct());
+				currDetail.setProductNumber(cartDetails.get(i).getProductNumber());
+				currDetail.setQuantityOrdered(cartDetails.get(i).getQuantity());
+				
+				orderDetails.add(currDetail);
+			}
+			order.setOrderDetails(orderDetails);
+			order = this.createOrder(order);
+			
+			for(int i = 0; i < cartDetails.size(); i++) {
+				cartDetails.get(i).setQuantity(0);
+				this.updateProductInCart(cartDetails.get(i));
+			}
+		}
+		catch (Exception e) {
+			System.out.println(e);
+		}
+		return order;
+	}
+	
 	// update a given order in the database
 	public void updateOrder(Order order) {
 		try {
@@ -853,6 +882,26 @@ public class Database {
 			System.out.println(e);
 		}
 		return addedToCart;
+	}
+	
+	// update or remove product in cart
+	public void updateProductInCart(ShoppingCartDetail detail) {
+		try {
+			if(detail.getQuantity() == 0) {
+				Statement delete = conn.createStatement();
+				delete.executeUpdate("Delete from shoppingcartdetails "
+						+ "where shoppingCartNumber = " + detail.getShoppingCartNumber() + " and productNumber = " + detail.getProductNumber());
+			}
+			else {
+				Statement update = conn.createStatement();
+				update.executeUpdate("Update shoppingcartdetails  "
+						+ "set quantity = " + detail.getQuantity() + " "
+								+ "where shoppingCartNumber = " + detail.getShoppingCartNumber() + " and productNumber = " + detail.getProductNumber());
+			}
+		}
+		catch(Exception e) {
+			System.out.println(e);
+		}
 	}
 	
 	public double getSalesTax(String state) {

@@ -17,6 +17,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
+import javafx.scene.control.Spinner;
+import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -367,7 +369,7 @@ public class Main extends Application {
 			cartWindow.setTitle("Shopping Cart");
 			
 			Pane cartPane = new Pane();
-			Scene cartScene = new Scene(cartPane, 1000, 800);
+			Scene cartScene = new Scene(cartPane, 600, 500);
 			cartScene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 			
 			// create table for cart
@@ -445,13 +447,7 @@ public class Main extends Application {
 			cartProductText.setLayoutX(labelStartX + textOffsetX);
 			cartProductText.setLayoutY(labelY);
 			cartProductText.setDisable(true);
-			cartProductText.getStyleClass().add("disabledText");
-			
-			TextField cartQuantityText = new TextField();
-			cartQuantityText.setLayoutX(labelStartX + textOffsetX);
-			cartQuantityText.setLayoutY(labelY + labelYOffset);
-			cartQuantityText.setDisable(true);
-			cartQuantityText.getStyleClass().add("disabledText");
+			cartProductText.getStyleClass().add("disabledText");			
 			
 			TextField cartMSRPText = new TextField();
 			cartMSRPText.setLayoutX(labelStartX + textOffsetX);
@@ -477,9 +473,42 @@ public class Main extends Application {
 			cartSubTotalText.setDisable(true);
 			cartSubTotalText.getStyleClass().add("disabledText");
 			
+			Spinner<Integer> cartQuantitySpinner = new Spinner<>();
+			cartQuantitySpinner.setLayoutX(labelStartX + textOffsetX);
+			cartQuantitySpinner.setLayoutY(labelY + labelYOffset);
+			cartQuantitySpinner.setDisable(true);
+			cartQuantitySpinner.getStyleClass().add("disabledText");
+			
+			Button updateCartButton = new Button();
+			updateCartButton.setLayoutX(450);
+			updateCartButton.setLayoutY(450);
+			updateCartButton.setText("Update");
+			updateCartButton.setMaxSize(100, 30);
+			updateCartButton.setMinSize(100, 30);
+			updateCartButton.setDisable(true);
+			
+			Button removeFromCartButton = new Button();
+			removeFromCartButton.setLayoutX(300);
+			removeFromCartButton.setLayoutY(450);
+			removeFromCartButton.setText("Remove");
+			removeFromCartButton.setMaxSize(100, 30);
+			removeFromCartButton.setMinSize(100, 30);
+			removeFromCartButton.setDisable(true);
+			
+			Button checkoutButton = new Button();
+			checkoutButton.setLayoutX(200);
+			checkoutButton.setLayoutY(450);
+			checkoutButton.setText("Check out");
+			checkoutButton.setMaxSize(100, 30);
+			checkoutButton.setMinSize(100, 30);
+			checkoutButton.setDisable(true);
+			
 			cartPane.getChildren().add(cartTable);
 			
 			cartPane.getChildren().add(closeCartButton);
+			cartPane.getChildren().add(updateCartButton);
+			cartPane.getChildren().add(removeFromCartButton);
+			cartPane.getChildren().add(checkoutButton);
 			
 			cartPane.getChildren().add(cartTitleLabel);
 			cartPane.getChildren().add(cartDetailsTitleLabel);
@@ -491,7 +520,7 @@ public class Main extends Application {
 			cartPane.getChildren().add(cartSubTotalLabel);
 			
 			cartPane.getChildren().add(cartProductText);
-			cartPane.getChildren().add(cartQuantityText);
+			cartPane.getChildren().add(cartQuantitySpinner);
 			cartPane.getChildren().add(cartMSRPText);
 			cartPane.getChildren().add(cartDiscountText);
 			cartPane.getChildren().add(cartTaxText);
@@ -791,7 +820,9 @@ public class Main extends Application {
 				public void handle(ActionEvent e) {
 					productData = FXCollections.observableList(allProducts);
 					productTable.setItems(productData);
+					
 					brandCombo.getSelectionModel().clearSelection();
+					lineCombo.getSelectionModel().clearSelection();
 					
 					brandCombo.setDisable(false);
 					lineCombo.setDisable(false);
@@ -876,13 +907,97 @@ public class Main extends Application {
 			    	selectedDetail = (ShoppingCartDetail)newSelection;
 			    	selectedProduct = selectedDetail.getProduct();
 			    	cartProductText.setText(selectedProduct.getProductName());
-			    	cartQuantityText.setText(Integer.toString(selectedDetail.getQuantity()));
+			    	
+			    	int currQuantity = selectedDetail.getQuantity();
+			    	SpinnerValueFactory<Integer> valueFactory =
+			                new SpinnerValueFactory.IntegerSpinnerValueFactory(0, selectedProduct.getQuantityInStock(), currQuantity);
+			    	cartQuantitySpinner.setValueFactory(valueFactory);
+			    	cartQuantitySpinner.setDisable(false);
+			    	updateCartButton.setDisable(false);
+			    	removeFromCartButton.setDisable(false);
+			    	checkoutButton.setDisable(false);
+			    	
 			    	cartMSRPText.setText(String.format("%.2f",selectedProduct.getMSRP()));
 			    	cartDiscountText.setText(Double.toString(selectedProduct.getDiscountPercent()));
 			    	cartTaxText.setText(Double.toString(service.getSalesTaxRate()));
 			    	double subtotal = selectedProduct.getMSRP() * (1 - ((selectedProduct.getDiscountPercent() - service.getSalesTaxRate()) / 100)) * selectedDetail.getQuantity();
 			    	cartSubTotalText.setText(String.format("%.2f", subtotal));
 			    }
+			});
+			
+			// checkout
+			checkoutButton.setOnAction(new EventHandler<ActionEvent>() {
+				public void handle(ActionEvent e) {
+					ShoppingCart cart = service.db.getShoppingCart(service.getCurrentCustomer().getCustomerNumber());
+					service.db.checkOut(cart);
+					
+					cartDetails = cart.getShoppingCartDetails();
+			    	cartData = FXCollections.observableList(cartDetails);
+			    	cartTable.setItems(cartData);
+			    	
+		    		cartProductText.setText("");
+		    		cartQuantitySpinner.getValueFactory().setValue(0);
+		    		cartMSRPText.setText("");
+		    		cartDiscountText.setText("");
+		    		cartTaxText.setText("");
+		    		cartSubTotalText.setText("");
+		    		
+		    		SpinnerValueFactory<Integer> valueFactory =
+			                new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 0, 0);
+			    	cartQuantitySpinner.setValueFactory(valueFactory);
+				}
+			});
+			
+			// remove item from cart
+			removeFromCartButton.setOnAction(new EventHandler<ActionEvent>() {
+				public void handle(ActionEvent e) {
+					selectedDetail.setQuantity(0);
+					service.db.updateProductInCart(selectedDetail);
+					
+					Customer curr = service.getCurrentCustomer();
+					ShoppingCart cart = service.db.getShoppingCart(curr.getCustomerNumber());
+					cartDetails = cart.getShoppingCartDetails();
+			    	cartData = FXCollections.observableList(cartDetails);
+			    	cartTable.setItems(cartData);
+			    	
+		    		cartProductText.setText("");
+		    		cartQuantitySpinner.getValueFactory().setValue(0);
+		    		cartMSRPText.setText("");
+		    		cartDiscountText.setText("");
+		    		cartTaxText.setText("");
+		    		cartSubTotalText.setText("");
+		    		
+		    		SpinnerValueFactory<Integer> valueFactory =
+			                new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 0, 0);
+			    	cartQuantitySpinner.setValueFactory(valueFactory);
+				}
+			});
+			
+			// update item in cart
+			updateCartButton.setOnAction(new EventHandler<ActionEvent>() {
+				public void handle(ActionEvent e) {
+					selectedDetail.setQuantity(cartQuantitySpinner.getValue());
+					service.db.updateProductInCart(selectedDetail);
+					
+					Customer curr = service.getCurrentCustomer();
+					ShoppingCart cart = service.db.getShoppingCart(curr.getCustomerNumber());
+					cartDetails = cart.getShoppingCartDetails();
+			    	cartData = FXCollections.observableList(cartDetails);
+			    	cartTable.setItems(cartData);
+			    	
+			    	if(cartQuantitySpinner.getValue() == 0) {
+			    		cartProductText.setText("");
+			    		cartQuantitySpinner.getValueFactory().setValue(0);
+			    		cartMSRPText.setText("");
+			    		cartDiscountText.setText("");
+			    		cartTaxText.setText("");
+			    		cartSubTotalText.setText("");
+			    		
+			    		SpinnerValueFactory<Integer> valueFactory =
+				                new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 0, 0);
+				    	cartQuantitySpinner.setValueFactory(valueFactory);
+			    	}
+				}
 			});
 			
 			lineCombo.valueProperty().addListener((obs, oldval, newval) -> {

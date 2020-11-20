@@ -28,4 +28,7 @@
 <fullyQualifiedTypeName name="java.util.ArrayList"/>
 <fullyQualifiedTypeName name="javafx.scene.control.ComboBox"/>
 <fullyQualifiedTypeName name="javafx.stage.WindowEvent"/>
+<fullyQualifiedTypeName name="javafx.scene.control.Spinner"/>
+<fullyQualifiedTypeName name="javafx.scene.control.SpinnerValueFactory"/>
+<fullyQualifiedTypeName name="javafx.scene.control.SpinnerValueFactory.DoubleSpinnerValueFactory"/>
 </qualifiedTypeNameHistroy>

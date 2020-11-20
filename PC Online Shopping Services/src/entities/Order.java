@@ -13,6 +13,7 @@ public class Order {
 	private String status;
 	private String comments;
 	private List<OrderDetail> orderDetails = new ArrayList<OrderDetail>();
+	private double total;
 	
 	public Order(int orderNumber, int customerNumber, Date orderDate, Date requiredDate,
 			Date shippedDate, String status, String comments) {
@@ -99,4 +100,13 @@ public class Order {
 	public void setOrderDetails(List<OrderDetail> orderDetails) {
 		this.orderDetails = orderDetails;
 	}
+
+	public double getTotal() {
+		return total;
+	}
+
+	public void setTotal(double total) {
+		this.total = total;
+	}
+	
 }
