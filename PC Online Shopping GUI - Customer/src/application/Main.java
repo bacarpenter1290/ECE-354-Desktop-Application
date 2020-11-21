@@ -1,5 +1,6 @@
 package application;
 	
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,6 +30,7 @@ import javafx.scene.layout.Pane;
 public class Main extends Application {
 	Product selectedProduct = new Product();
 	ShoppingCartDetail selectedDetail = new ShoppingCartDetail();
+	OrderDetail selectedOrderDetail = new OrderDetail();
 	
 	List<Product> allProducts;
 	List<Product> filteredProducts;
@@ -42,6 +44,9 @@ public class Main extends Application {
 	
 	List<ShoppingCartDetail> cartDetails;
 	ObservableList<ShoppingCartDetail> cartData = FXCollections.observableList(new ArrayList<ShoppingCartDetail>());
+	
+	List<OrderDetail> orderDetails;
+	ObservableList<OrderDetail> orderData = FXCollections.observableList(new ArrayList<OrderDetail>());
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
@@ -480,7 +485,7 @@ public class Main extends Application {
 			cartQuantitySpinner.getStyleClass().add("disabledText");
 			
 			Button updateCartButton = new Button();
-			updateCartButton.setLayoutX(450);
+			updateCartButton.setLayoutX(460);
 			updateCartButton.setLayoutY(450);
 			updateCartButton.setText("Update");
 			updateCartButton.setMaxSize(100, 30);
@@ -488,7 +493,7 @@ public class Main extends Application {
 			updateCartButton.setDisable(true);
 			
 			Button removeFromCartButton = new Button();
-			removeFromCartButton.setLayoutX(300);
+			removeFromCartButton.setLayoutX(310);
 			removeFromCartButton.setLayoutY(450);
 			removeFromCartButton.setText("Remove");
 			removeFromCartButton.setMaxSize(100, 30);
@@ -496,7 +501,7 @@ public class Main extends Application {
 			removeFromCartButton.setDisable(true);
 			
 			Button checkoutButton = new Button();
-			checkoutButton.setLayoutX(200);
+			checkoutButton.setLayoutX(160);
 			checkoutButton.setLayoutY(450);
 			checkoutButton.setText("Check out");
 			checkoutButton.setMaxSize(100, 30);
@@ -700,12 +705,195 @@ public class Main extends Application {
 				}
 			});
 			
+			// create new window for an order confirmation after check out
+			Stage orderWindow = new Stage();
+			orderWindow.setTitle("Order Confirmation");
+			
+			Pane orderPane = new Pane();
+			Scene orderScene = new Scene(orderPane, 600, 550);
+			orderScene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
+			
+			// create table for order
+			TableView orderTable = new TableView();
+			orderTable.setEditable(true);
+			orderTable.setPrefWidth(200);
+			orderTable.setLayoutX(10);
+			orderTable.setLayoutY(25);
+			
+			TableColumn orderProductNameCol = new TableColumn("Product");
+			orderProductNameCol.setCellValueFactory(
+					new PropertyValueFactory<Product, String>("product"));
+					
+			TableColumn orderQuantityCol = new TableColumn("Quantity");
+			orderQuantityCol.setCellValueFactory(
+					new PropertyValueFactory<Product, String>("quantityOrdered"));
+			
+			orderTable.getColumns().addAll(orderQuantityCol, orderProductNameCol);
+			
+			Label orderTitleLabel = new Label();
+			orderTitleLabel.setLayoutX(10);
+			orderTitleLabel.setLayoutY(0);
+			orderTitleLabel.setText("Order:");
+			orderTitleLabel.getStyleClass().add("title");
+			
+			Label orderDetailsTitleLabel = new Label();
+			orderDetailsTitleLabel.setLayoutX(300);
+			orderDetailsTitleLabel.setLayoutY(0);
+			orderDetailsTitleLabel.setText("Item Details:");
+			orderDetailsTitleLabel.getStyleClass().add("title");
+			
+			Label orderOverallDetailsTitleLabel = new Label();
+			orderOverallDetailsTitleLabel.setLayoutX(300);
+			orderOverallDetailsTitleLabel.setLayoutY(350);
+			orderOverallDetailsTitleLabel.setText("Order Details:");
+			orderOverallDetailsTitleLabel.getStyleClass().add("title");
+			
+			Button closeOrderButton = new Button();
+			closeOrderButton.setLayoutX(10);
+			closeOrderButton.setLayoutY(500);
+			closeOrderButton.setText("Close");
+			closeOrderButton.setMaxSize(100, 30);
+			closeOrderButton.setMinSize(100, 30);
+			
+			// create label and text boxes for selected product
+			labelY = 25;
+			labelYOffset = 50;
+			labelStartX = 300;
+			Label orderProductLabel = new Label();
+			orderProductLabel.setLayoutX(labelStartX);
+			orderProductLabel.setLayoutY(labelY);
+			orderProductLabel.setText("Product");
+			
+			Label orderQuantityLabel = new Label();
+			orderQuantityLabel.setLayoutX(labelStartX);
+			orderQuantityLabel.setLayoutY(labelY + labelYOffset);
+			orderQuantityLabel.setText("Quantity");
+			
+			Label orderMSRPLabel = new Label();
+			orderMSRPLabel.setLayoutX(labelStartX);
+			orderMSRPLabel.setLayoutY(labelY + 2*labelYOffset);
+			orderMSRPLabel.setText("MSRP");
+			
+			Label orderDiscountLabel = new Label();
+			orderDiscountLabel.setLayoutX(labelStartX);
+			orderDiscountLabel.setLayoutY(labelY + 3*labelYOffset);
+			orderDiscountLabel.setText("Discount");
+			
+			Label orderTaxLabel = new Label();
+			orderTaxLabel.setLayoutX(labelStartX);
+			orderTaxLabel.setLayoutY(labelY + 4*labelYOffset);
+			orderTaxLabel.setText("Sales Tax");
+			
+			Label orderSubTotalLabel = new Label();
+			orderSubTotalLabel.setLayoutX(labelStartX);
+			orderSubTotalLabel.setLayoutY(labelY + 5*labelYOffset);
+			orderSubTotalLabel.setText("Subtotal");
+			
+			Label orderTotalLabel = new Label();
+			orderTotalLabel.setLayoutX(labelStartX);
+			orderTotalLabel.setLayoutY(labelY + 9*labelYOffset);
+			orderTotalLabel.setText("Order total");
+			
+			Label orderDateLabel = new Label();
+			orderDateLabel.setLayoutX(labelStartX);
+			orderDateLabel.setLayoutY(labelY + 7*labelYOffset);
+			orderDateLabel.setText("Order date");
+			
+			Label orderRequiredDateLabel = new Label();
+			orderRequiredDateLabel.setLayoutX(labelStartX);
+			orderRequiredDateLabel.setLayoutY(labelY + 8*labelYOffset);
+			orderRequiredDateLabel.setText("Required date");
+			
+			textOffsetX = 100;
+			TextField orderProductText = new TextField();
+			orderProductText.setLayoutX(labelStartX + textOffsetX);
+			orderProductText.setLayoutY(labelY);
+			orderProductText.setDisable(true);
+			orderProductText.getStyleClass().add("disabledText");			
+			
+			TextField orderMSRPText = new TextField();
+			orderMSRPText.setLayoutX(labelStartX + textOffsetX);
+			orderMSRPText.setLayoutY(labelY + 2*labelYOffset);
+			orderMSRPText.setDisable(true);
+			orderMSRPText.getStyleClass().add("disabledText");
+			
+			TextField orderDiscountText = new TextField();
+			orderDiscountText.setLayoutX(labelStartX + textOffsetX);
+			orderDiscountText.setLayoutY(labelY + 3*labelYOffset);
+			orderDiscountText.setDisable(true);
+			orderDiscountText.getStyleClass().add("disabledText");
+			
+			TextField orderTaxText = new TextField();
+			orderTaxText.setLayoutX(labelStartX + textOffsetX);
+			orderTaxText.setLayoutY(labelY + 4*labelYOffset);
+			orderTaxText.setDisable(true);
+			orderTaxText.getStyleClass().add("disabledText");
+			
+			TextField orderSubTotalText = new TextField();
+			orderSubTotalText.setLayoutX(labelStartX + textOffsetX);
+			orderSubTotalText.setLayoutY(labelY + 5*labelYOffset);
+			orderSubTotalText.setDisable(true);
+			orderSubTotalText.getStyleClass().add("disabledText");
+			
+			TextField orderQuantityText = new TextField();
+			orderQuantityText.setLayoutX(labelStartX + textOffsetX);
+			orderQuantityText.setLayoutY(labelY + labelYOffset);
+			orderQuantityText.setDisable(true);
+			orderQuantityText.getStyleClass().add("disabledText");
+			
+			TextField orderTotalText = new TextField();
+			orderTotalText.setLayoutX(labelStartX + textOffsetX);
+			orderTotalText.setLayoutY(labelY + 9*labelYOffset);
+			orderTotalText.setDisable(true);
+			orderTotalText.getStyleClass().add("disabledText");
+			
+			TextField orderDateText = new TextField();
+			orderDateText.setLayoutX(labelStartX + textOffsetX);
+			orderDateText.setLayoutY(labelY + 7*labelYOffset);
+			orderDateText.setDisable(true);
+			orderDateText.getStyleClass().add("disabledText");
+			
+			TextField orderRequiredDateText = new TextField();
+			orderRequiredDateText.setLayoutX(labelStartX + textOffsetX);
+			orderRequiredDateText.setLayoutY(labelY + 8*labelYOffset);
+			orderRequiredDateText.setDisable(true);
+			orderRequiredDateText.getStyleClass().add("disabledText");
+			
+			orderPane.getChildren().add(orderTable);
+			
+			orderPane.getChildren().add(closeOrderButton);
+			
+			orderPane.getChildren().add(orderTitleLabel);
+			orderPane.getChildren().add(orderDetailsTitleLabel);
+			orderPane.getChildren().add(orderProductLabel);
+			orderPane.getChildren().add(orderQuantityLabel);
+			orderPane.getChildren().add(orderMSRPLabel);
+			orderPane.getChildren().add(orderDiscountLabel);
+			orderPane.getChildren().add(orderTaxLabel);
+			orderPane.getChildren().add(orderSubTotalLabel);
+			orderPane.getChildren().add(orderTotalLabel);
+			orderPane.getChildren().add(orderOverallDetailsTitleLabel);
+			orderPane.getChildren().add(orderDateLabel);
+			orderPane.getChildren().add(orderRequiredDateLabel);
+			
+			orderPane.getChildren().add(orderProductText);
+			orderPane.getChildren().add(orderQuantityText);
+			orderPane.getChildren().add(orderMSRPText);
+			orderPane.getChildren().add(orderDiscountText);
+			orderPane.getChildren().add(orderTaxText);
+			orderPane.getChildren().add(orderSubTotalText);
+			orderPane.getChildren().add(orderTotalText);
+			orderPane.getChildren().add(orderDateText);
+			orderPane.getChildren().add(orderRequiredDateText);
+			
+			orderWindow.setScene(orderScene);
+			
 			// create window for choosing quantity to add to cart
 			Stage addToCartWindow = new Stage();
 			addToCartWindow.setTitle("Choose Quantity");
 			
 			Pane addToCartPane = new Pane();
-			Scene addToCartScene = new Scene(addToCartPane, 400, 400);
+			Scene addToCartScene = new Scene(addToCartPane, 300, 100);
 			
 			Label addToCartLabel = new Label();
 			addToCartLabel.setLayoutX(10);
@@ -873,6 +1061,10 @@ public class Main extends Application {
 					cartDetails = cart.getShoppingCartDetails();
 			    	cartData = FXCollections.observableList(cartDetails);
 			    	cartTable.setItems(cartData);
+			    	
+			    	if(cartDetails.size() > 0) {
+			    		checkoutButton.setDisable(false);
+			    	}
 					
 			    	cartWindow.setTitle("Shopping cart - Customer #" + service.getCurrentCustomer().getCustomerNumber());
 					cartWindow.show();
@@ -925,26 +1117,89 @@ public class Main extends Application {
 			    }
 			});
 			
+			orderTable.getSelectionModel().selectedItemProperty().addListener((obs, oldSelection, newSelection) -> {
+			    if (newSelection != null) {
+			    	selectedOrderDetail = (OrderDetail)newSelection;
+			    	selectedProduct = selectedOrderDetail.getProduct();
+			    	orderProductText.setText(selectedProduct.getProductName());
+			    	
+			    	orderQuantityText.setText(Integer.toString(selectedOrderDetail.getQuantityOrdered()));		    	
+			    	orderMSRPText.setText(String.format("%.2f",selectedProduct.getMSRP()));
+			    	orderDiscountText.setText(Double.toString(selectedProduct.getDiscountPercent()));
+			    	orderTaxText.setText(Double.toString(service.getSalesTaxRate()));
+			    	double subtotal = selectedProduct.getMSRP() * (1 - ((selectedProduct.getDiscountPercent() - service.getSalesTaxRate()) / 100)) * selectedOrderDetail.getQuantityOrdered();
+			    	orderSubTotalText.setText(String.format("%.2f", subtotal));
+			    }
+			});
+			
+			// close order window
+			closeOrderButton.setOnAction(new EventHandler<ActionEvent>() {
+				public void handle(ActionEvent e) {
+					orderWindow.close();
+					shoppingWindow.show();
+				}
+			});
+			
 			// checkout
 			checkoutButton.setOnAction(new EventHandler<ActionEvent>() {
 				public void handle(ActionEvent e) {
 					ShoppingCart cart = service.db.getShoppingCart(service.getCurrentCustomer().getCustomerNumber());
-					service.db.checkOut(cart);
 					
-					cartDetails = cart.getShoppingCartDetails();
-			    	cartData = FXCollections.observableList(cartDetails);
-			    	cartTable.setItems(cartData);
-			    	
-		    		cartProductText.setText("");
-		    		cartQuantitySpinner.getValueFactory().setValue(0);
-		    		cartMSRPText.setText("");
-		    		cartDiscountText.setText("");
-		    		cartTaxText.setText("");
-		    		cartSubTotalText.setText("");
-		    		
-		    		SpinnerValueFactory<Integer> valueFactory =
-			                new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 0, 0);
-			    	cartQuantitySpinner.setValueFactory(valueFactory);
+					if(cart.getShoppingCartDetails().size() > 0) {
+						Order newOrder = service.db.checkOut(cart);
+						
+						cartDetails = cart.getShoppingCartDetails();
+				    	cartData = FXCollections.observableList(cartDetails);
+				    	cartTable.setItems(cartData);
+				    	
+			    		cartProductText.setText("");
+			    		cartMSRPText.setText("");
+			    		cartDiscountText.setText("");
+			    		cartTaxText.setText("");
+			    		cartSubTotalText.setText("");
+			    		
+			    		SpinnerValueFactory<Integer> valueFactory =
+				                new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 0, 0);
+				    	cartQuantitySpinner.setValueFactory(valueFactory);
+				    	cartQuantitySpinner.getValueFactory().setValue(0);
+				    	
+				    	updateCartButton.setDisable(true);
+				    	removeFromCartButton.setDisable(true);
+				    	
+						allProducts = service.db.getAllProducts();
+				    	productData = FXCollections.observableList(allProducts);
+						productTable.setItems(productData);
+						
+						productTable.getSelectionModel().clearSelection();
+						productText.setText("");
+				        brandText.setText("");
+				        productLineText.setText("");
+				        descriptionText.setText("");
+				        quantityInStockText.setText("");
+				        msrpText.setText("");
+				        discountText.setText("");
+				        priceText.setText("");
+				        
+						orderDetails = newOrder.getOrderDetails();
+						orderData = FXCollections.observableList(orderDetails);
+				    	orderTable.setItems(orderData);
+				    	
+				    	double total = 0;
+				    	for(int i = 0; i < orderDetails.size(); i++) {
+				    		Product currProduct = orderDetails.get(i).getProduct();
+				    		
+				    		total += currProduct.getMSRP() * (1 - ((currProduct.getDiscountPercent() - service.getSalesTaxRate()) / 100)) * orderDetails.get(i).getQuantityOrdered();
+				    	}
+				    	
+				    	orderTotalText.setText(String.format("%.2f", total));
+				    	
+				    	SimpleDateFormat sdf = new SimpleDateFormat("MM-dd-yyyy");
+				    	orderDateText.setText(sdf.format(newOrder.getOrderDate()));
+				    	orderRequiredDateText.setText(sdf.format(newOrder.getRequiredDate()));
+				        
+				        cartWindow.close();
+				        orderWindow.show();
+					}
 				}
 			});
 			
@@ -970,6 +1225,9 @@ public class Main extends Application {
 		    		SpinnerValueFactory<Integer> valueFactory =
 			                new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 0, 0);
 			    	cartQuantitySpinner.setValueFactory(valueFactory);
+			    	
+			    	updateCartButton.setDisable(true);
+			    	removeFromCartButton.setDisable(true);
 				}
 			});
 			
@@ -996,6 +1254,9 @@ public class Main extends Application {
 			    		SpinnerValueFactory<Integer> valueFactory =
 				                new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 0, 0);
 				    	cartQuantitySpinner.setValueFactory(valueFactory);
+				    	
+				    	updateCartButton.setDisable(true);
+				    	removeFromCartButton.setDisable(true);
 			    	}
 				}
 			});

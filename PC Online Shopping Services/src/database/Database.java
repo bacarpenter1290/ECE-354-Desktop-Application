@@ -446,6 +446,8 @@ public class Database {
 				orderNumber = rs.getInt(1);
 			}
 			order.setOrderNumber(orderNumber);
+			order.setOrderDate(java.sql.Date.valueOf(sdf.format(today)));
+			order.setRequiredDate(java.sql.Date.valueOf(formattedRequiredDate));
 			
 			this.createOrderDetails(order.getOrderDetails(), orderNumber);
 		}
@@ -474,6 +476,11 @@ public class Database {
 			order = this.createOrder(order);
 			
 			for(int i = 0; i < cartDetails.size(); i++) {
+				Product currProduct = this.getProduct(cartDetails.get(i).getProductNumber());
+				int newQuantity = currProduct.getQuantityInStock() - cartDetails.get(i).getQuantity();
+				currProduct.setQuantityInStock(newQuantity);
+				this.updateProduct(currProduct);
+				
 				cartDetails.get(i).setQuantity(0);
 				this.updateProductInCart(cartDetails.get(i));
 			}
